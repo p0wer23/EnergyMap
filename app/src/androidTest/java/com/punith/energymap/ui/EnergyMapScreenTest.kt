@@ -8,10 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -153,7 +152,11 @@ class EnergyMapScreenTest {
             }
         }
 
+        composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_CHECK_INS_HEADER).assertIsDisplayed()
+        composeRule.onNodeWithText("Energy Check-ins").assertIsDisplayed()
         composeRule.onNodeWithTag(EnergyMapTestTags.TODAY_FILTER_BUTTON).assertIsDisplayed()
+        composeRule.onNodeWithTag(EnergyMapTestTags.ADD_CHECK_IN_BUTTON).assertIsDisplayed()
+        composeRule.onAllNodesWithText("Current Energy").assertCountEquals(0)
         composeRule.onNodeWithText("No check-ins recorded for today.").assertIsDisplayed()
 
         composeRule.onNodeWithTag(EnergyMapTestTags.ADD_CHECK_IN_BUTTON).performClick()
@@ -165,8 +168,9 @@ class EnergyMapScreenTest {
             }
         composeRule.onNodeWithTag(EnergyMapTestTags.SAVE_CHECK_IN_BUTTON).performClick()
 
+        composeRule.onNodeWithTag(EnergyMapTestTags.LATEST_TODAY_ENTRY).assertIsDisplayed()
         composeRule.onNodeWithText(longNotePreview).assertIsDisplayed()
-        composeRule.onNodeWithText(longNote).assertDoesNotExist()
+        composeRule.onAllNodesWithText(longNote).assertCountEquals(0)
 
         composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_NOTE_PREFIX}1").performClick()
         composeRule.onNodeWithText(longNote).assertIsDisplayed()
@@ -178,9 +182,11 @@ class EnergyMapScreenTest {
         composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}99").assertIsDisplayed()
         composeRule.onNodeWithText("Previous day note").assertIsDisplayed()
         composeRule.onNodeWithText(formatDateTime(nowMillis - 86_400_000, zoneId)).assertIsDisplayed()
-        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}1").assertDoesNotExist()
+        composeRule.onAllNodesWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}1").assertCountEquals(0)
+        composeRule.onAllNodesWithTag(EnergyMapTestTags.LATEST_TODAY_ENTRY).assertCountEquals(0)
 
         composeRule.onNodeWithTag(EnergyMapTestTags.TODAY_FILTER_BUTTON).performClick()
+        composeRule.onNodeWithTag(EnergyMapTestTags.LATEST_TODAY_ENTRY).assertIsDisplayed()
         composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_EDIT_PREFIX}1").performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextClearance()
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextInput("Updated check-in")
@@ -191,7 +197,7 @@ class EnergyMapScreenTest {
         composeRule.onNodeWithTag(EnergyMapTestTags.SAVE_CHECK_IN_BUTTON).performClick()
 
         composeRule.onNodeWithText("Updated check-in").assertIsDisplayed()
-        composeRule.onNodeWithText(longNotePreview).assertDoesNotExist()
+        composeRule.onAllNodesWithText(longNotePreview).assertCountEquals(0)
 
         composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_EDIT_PREFIX}1").performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.DELETE_CHECK_IN_BUTTON).performClick()

@@ -3,20 +3,21 @@ package com.punith.energymap.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val DarkColors = darkColorScheme(
-    primary = androidx.compose.ui.graphics.Color(0xFF7BD389),
-    onPrimary = androidx.compose.ui.graphics.Color(0xFF0E1A12),
-    secondary = androidx.compose.ui.graphics.Color(0xFF9FC9FF),
-    onSecondary = androidx.compose.ui.graphics.Color(0xFF102033),
-    background = androidx.compose.ui.graphics.Color(0xFF101316),
-    onBackground = androidx.compose.ui.graphics.Color(0xFFE6E1E5),
-    surface = androidx.compose.ui.graphics.Color(0xFF171B1F),
-    onSurface = androidx.compose.ui.graphics.Color(0xFFE6E1E5),
-    surfaceContainer = androidx.compose.ui.graphics.Color(0xFF22272C),
-    surfaceContainerLow = androidx.compose.ui.graphics.Color(0xFF1B2024),
-    surfaceContainerHigh = androidx.compose.ui.graphics.Color(0xFF2A3036),
-    onSurfaceVariant = androidx.compose.ui.graphics.Color(0xFFB9C1C9),
+    primary = Color(0xFFF2F3F5),
+    onPrimary = Color(0xFF090A0C),
+    secondary = Color(0xFFB7BDC7),
+    onSecondary = Color(0xFF0D0F12),
+    background = Color(0xFF08090B),
+    onBackground = Color(0xFFF5F5F6),
+    surface = Color(0xFF0D0F12),
+    onSurface = Color(0xFFF5F5F6),
+    surfaceContainer = Color(0xFF121418),
+    surfaceContainerLow = Color(0xFF101216),
+    surfaceContainerHigh = Color(0xFF171A1F),
+    onSurfaceVariant = Color(0xFF9BA2AD),
 )
 
 @Composable

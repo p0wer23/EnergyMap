@@ -1,13 +1,10 @@
 <resources>
     <string name="app_name">EnergyMap</string>
-    <string name="current_energy_title">Current Energy</string>
     <string name="energy_history_title">Energy Check-ins</string>
     <string name="today_filter_label">Today</string>
     <string name="previous_filter_label">Previous</string>
-    <string name="no_current_energy">No energy check-in yet today.</string>
     <string name="no_today_check_ins">No check-ins recorded for today.</string>
     <string name="no_previous_check_ins">No previous check-ins yet.</string>
-    <string name="last_recorded_value">Last recorded %1$s</string>
     <string name="add_check_in_symbol">+</string>
     <string name="edit_entry_symbol">&gt;</string>
     <string name="add_energy_content_description">Add energy</string>

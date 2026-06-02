@@ -19,7 +19,12 @@ EnergyMap is a local-only Android app for tracking:
 - v1 edit flow changes level and note, not timestamp
 - add flow starts from the most recent recorded score, or `5` if none exists
 - check-in list defaults to `Today` with a `Today` / `Previous` selector
-- list rows show score-only circles, timestamp, and expandable note previews
+- no separate current-energy panel
+- `Energy Check-ins` header keeps the `+` action on the right
+- in `Today`, the newest entry is the first row and is only slightly larger
+- in `Previous`, entries render as a normal compact history list
+- list rows use compact near-black glass containers with expandable note previews
+- only the score circle carries the red-to-green color scale
 
 Suggested labels:
 

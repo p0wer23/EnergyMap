@@ -8,7 +8,6 @@ string add_check_in_symbol
 string add_energy_content_description
 string app_name
 string cancel_action
-string current_energy_title
 string delete_action
 string delete_dialog_message
 string delete_dialog_title
@@ -16,9 +15,7 @@ string edit_check_in_title
 string edit_entry_content_description
 string edit_entry_symbol
 string energy_history_title
-string last_recorded_value
 string new_check_in_title
-string no_current_energy
 string no_previous_check_ins
 string no_today_check_ins
 string note_label

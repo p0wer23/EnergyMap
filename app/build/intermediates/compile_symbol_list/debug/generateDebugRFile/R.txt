@@ -6,7 +6,6 @@ int string add_check_in_symbol 0x0
 int string add_energy_content_description 0x0
 int string app_name 0x0
 int string cancel_action 0x0
-int string current_energy_title 0x0
 int string delete_action 0x0
 int string delete_dialog_message 0x0
 int string delete_dialog_title 0x0
@@ -14,9 +13,7 @@ int string edit_check_in_title 0x0
 int string edit_entry_content_description 0x0
 int string edit_entry_symbol 0x0
 int string energy_history_title 0x0
-int string last_recorded_value 0x0
 int string new_check_in_title 0x0
-int string no_current_energy 0x0
 int string no_previous_check_ins 0x0
 int string no_today_check_ins 0x0
 int string note_label 0x0

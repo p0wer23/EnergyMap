@@ -48,6 +48,9 @@ data class EnergyDerivedState(
 
 object EnergyMapTestTags {
     const val ADD_CHECK_IN_BUTTON = "add_check_in_button"
+    const val ENERGY_CHECK_INS_HEADER = "energy_check_ins_header"
+    const val ENERGY_CHECK_INS_HEADER_ACTION = "energy_check_ins_header_action"
+    const val LATEST_TODAY_ENTRY = "latest_today_entry"
     const val ENERGY_EDITOR_DIALOG = "energy_editor_dialog"
     const val ENERGY_SLIDER = "energy_slider"
     const val ENERGY_NOTE_FIELD = "energy_note_field"
