@@ -3,7 +3,9 @@ package com.punith.energymap.ui
 import com.punith.energymap.data.EnergyEntry
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EnergyCheckInModelsTest {
@@ -41,7 +43,7 @@ class EnergyCheckInModelsTest {
         )
 
         assertNull(state.currentEnergy)
-        assertEquals(1, state.previousDaySections.size)
+        assertEquals(listOf(yesterdayEntry), state.previousEntries)
     }
 
     @Test
@@ -57,11 +59,11 @@ class EnergyCheckInModelsTest {
         )
 
         assertEquals(listOf(justAfterMidnight), state.todayEntries)
-        assertEquals(listOf(justBeforeMidnight), state.previousDaySections.single().entries)
+        assertEquals(listOf(justBeforeMidnight), state.previousEntries)
     }
 
     @Test
-    fun previousDayGroupsAreSortedNewestFirst() {
+    fun previousEntriesAreSortedNewestFirst() {
         val today = EnergyEntry(id = 1, timestamp = nowMillis, energyLevel = 5, note = "")
         val yesterday = EnergyEntry(id = 2, timestamp = nowMillis - 86_400_000, energyLevel = 6, note = "")
         val twoDaysAgo = EnergyEntry(id = 3, timestamp = nowMillis - (2 * 86_400_000), energyLevel = 7, note = "")
@@ -72,23 +74,23 @@ class EnergyCheckInModelsTest {
             zoneId = zoneId,
         )
 
-        assertEquals(2, state.previousDaySections.size)
-        assertEquals(listOf(yesterday), state.previousDaySections[0].entries)
-        assertEquals(listOf(twoDaysAgo), state.previousDaySections[1].entries)
+        assertEquals(listOf(yesterday, twoDaysAgo), state.previousEntries)
     }
 
     @Test
-    fun energyLabelBucketsMatchRequirements() {
-        assertEquals("exhausted", energyBucketLabel(1))
-        assertEquals("exhausted", energyBucketLabel(2))
-        assertEquals("low", energyBucketLabel(3))
-        assertEquals("low", energyBucketLabel(4))
-        assertEquals("neutral", energyBucketLabel(5))
-        assertEquals("neutral", energyBucketLabel(6))
-        assertEquals("good", energyBucketLabel(7))
-        assertEquals("good", energyBucketLabel(8))
-        assertEquals("high", energyBucketLabel(9))
-        assertEquals("high", energyBucketLabel(10))
+    fun truncatedNotePreviewLeavesTwentyWordsIntact() {
+        val note = (1..20).joinToString(" ") { "word$it" }
+
+        assertFalse(isExpandableNote(note))
+        assertEquals(note, truncatedNotePreview(note))
+    }
+
+    @Test
+    fun truncatedNotePreviewCutsOffAfterTwentyWords() {
+        val note = (1..21).joinToString(" ") { "word$it" }
+
+        assertTrue(isExpandableNote(note))
+        assertEquals((1..20).joinToString(" ") { "word$it" } + "...", truncatedNotePreview(note))
     }
 
     @Test
@@ -107,17 +109,15 @@ class EnergyCheckInModelsTest {
     }
 
     @Test
-    fun deletingEntryRemovesItFromDerivedState() {
-        val today = EnergyEntry(id = 1, timestamp = nowMillis, energyLevel = 7, note = "")
-        val yesterday = EnergyEntry(id = 2, timestamp = nowMillis - 86_400_000, energyLevel = 4, note = "")
-
-        val state = deriveEnergyState(
-            entries = listOf(today, yesterday).filterNot { it.id == today.id },
-            nowMillis = nowMillis,
-            zoneId = zoneId,
+    fun defaultNewEnergyLevelUsesLatestOverallScore() {
+        val latestOverallEntry = EnergyEntry(
+            id = 1,
+            timestamp = nowMillis - 86_400_000,
+            energyLevel = 3,
+            note = "Yesterday",
         )
 
-        assertNull(state.currentEnergy)
-        assertEquals(listOf(yesterday), state.previousDaySections.single().entries)
+        assertEquals(3, defaultNewEnergyLevel(latestOverallEntry))
+        assertEquals(5, defaultNewEnergyLevel(null))
     }
 }

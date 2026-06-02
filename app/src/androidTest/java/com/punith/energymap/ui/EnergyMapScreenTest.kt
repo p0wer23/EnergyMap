@@ -1,12 +1,15 @@
 package com.punith.energymap.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -30,15 +33,30 @@ class EnergyMapScreenTest {
 
     private val nowMillis: Long = 1_717_329_600_000
     private val zoneId: ZoneId = ZoneId.of("UTC")
+    private val longNote = (1..21).joinToString(" ") { "word$it" }
+    private val longNotePreview = (1..20).joinToString(" ") { "word$it" } + "..."
 
     @Test
-    fun addEditAndDeleteEnergyCheckInFlowWorks() {
+    fun addEditExpandFilterAndDeleteEnergyCheckInFlowWorks() {
         composeRule.setContent {
             EnergyMapTheme {
-                var entries by remember { mutableStateOf(emptyList<EnergyEntry>()) }
+                var entries by remember {
+                    mutableStateOf(
+                        listOf(
+                            EnergyEntry(
+                                id = 99,
+                                timestamp = nowMillis - 86_400_000,
+                                energyLevel = 4,
+                                note = "Previous day note",
+                            ),
+                        ),
+                    )
+                }
                 var editorState by remember { mutableStateOf(EnergyEditorState()) }
                 var pendingDeleteEntry by remember { mutableStateOf<EnergyEntry?>(null) }
-                var nextId by remember { mutableStateOf(1L) }
+                var nextId by remember { mutableLongStateOf(1L) }
+                var selectedFilter by remember { mutableStateOf(EnergyEntryFilter.TODAY) }
+                var expandedEntryId by remember { mutableStateOf<Long?>(null) }
 
                 fun dismissDialogs() {
                     editorState = EnergyEditorState()
@@ -57,16 +75,17 @@ class EnergyMapScreenTest {
                         latestOverallEntry = derivedState.latestOverallEntry,
                         hasCheckInToday = derivedState.todayEntries.isNotEmpty(),
                         todayEntries = derivedState.todayEntries,
-                        previousDaySections = derivedState.previousDaySections,
+                        previousEntries = derivedState.previousEntries,
+                        selectedEntryFilter = selectedFilter,
+                        expandedEntryId = expandedEntryId,
                         editorState = editorState,
                         pendingDeleteEntry = pendingDeleteEntry,
                     ),
                     onAddEnergyClick = {
-                        val latestToday = derivedState.todayEntries.firstOrNull()
                         editorState = EnergyEditorState(
                             isVisible = true,
                             mode = EnergyEditorMode.Add,
-                            level = latestToday?.energyLevel ?: 5,
+                            level = derivedState.latestOverallEntry?.energyLevel ?: 5,
                         )
                     },
                     onEditEnergyClick = { entry ->
@@ -77,6 +96,12 @@ class EnergyMapScreenTest {
                             note = entry.note,
                             timestampText = formatDateTime(entry.timestamp, zoneId),
                         )
+                    },
+                    onEntryFilterChange = { filter ->
+                        selectedFilter = filter
+                    },
+                    onToggleExpandedEntry = { entryId ->
+                        expandedEntryId = if (expandedEntryId == entryId) null else entryId
                     },
                     onEditorLevelChange = { level ->
                         editorState = editorState.copy(level = level)
@@ -110,6 +135,8 @@ class EnergyMapScreenTest {
                                 }
                             }
                         }
+                        selectedFilter = EnergyEntryFilter.TODAY
+                        expandedEntryId = null
                         dismissDialogs()
                     },
                     onRequestDelete = { entry ->
@@ -126,16 +153,35 @@ class EnergyMapScreenTest {
             }
         }
 
+        composeRule.onNodeWithTag(EnergyMapTestTags.TODAY_FILTER_BUTTON).assertIsDisplayed()
+        composeRule.onNodeWithText("No check-ins recorded for today.").assertIsDisplayed()
+
         composeRule.onNodeWithTag(EnergyMapTestTags.ADD_CHECK_IN_BUTTON).performClick()
-        composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextInput("Morning check-in")
+        composeRule.onNodeWithText("4").assertIsDisplayed()
+        composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextInput(longNote)
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_SLIDER)
             .performSemanticsAction(SemanticsActions.SetProgress) { setProgress ->
                 setProgress(8f)
             }
         composeRule.onNodeWithTag(EnergyMapTestTags.SAVE_CHECK_IN_BUTTON).performClick()
-        composeRule.onNodeWithText("8/10").assertIsDisplayed()
 
-        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}1").performClick()
+        composeRule.onNodeWithText(longNotePreview).assertIsDisplayed()
+        composeRule.onNodeWithText(longNote).assertDoesNotExist()
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_NOTE_PREFIX}1").performClick()
+        composeRule.onNodeWithText(longNote).assertIsDisplayed()
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_NOTE_PREFIX}1").performClick()
+        composeRule.onNodeWithText(longNotePreview).assertIsDisplayed()
+
+        composeRule.onNodeWithTag(EnergyMapTestTags.PREVIOUS_FILTER_BUTTON).performClick()
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}99").assertIsDisplayed()
+        composeRule.onNodeWithText("Previous day note").assertIsDisplayed()
+        composeRule.onNodeWithText(formatDateTime(nowMillis - 86_400_000, zoneId)).assertIsDisplayed()
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}1").assertDoesNotExist()
+
+        composeRule.onNodeWithTag(EnergyMapTestTags.TODAY_FILTER_BUTTON).performClick()
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_EDIT_PREFIX}1").performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextClearance()
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_NOTE_FIELD).performTextInput("Updated check-in")
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_SLIDER)
@@ -143,10 +189,11 @@ class EnergyMapScreenTest {
                 setProgress(6f)
             }
         composeRule.onNodeWithTag(EnergyMapTestTags.SAVE_CHECK_IN_BUTTON).performClick()
-        composeRule.onNodeWithText("6/10").assertIsDisplayed()
-        composeRule.onNodeWithText("Updated check-in").assertIsDisplayed()
 
-        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}1").performClick()
+        composeRule.onNodeWithText("Updated check-in").assertIsDisplayed()
+        composeRule.onNodeWithText(longNotePreview).assertDoesNotExist()
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_ENTRY_EDIT_PREFIX}1").performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.DELETE_CHECK_IN_BUTTON).performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.DELETE_CONFIRM_BUTTON).performClick()
         composeRule.onNodeWithText("No check-ins recorded for today.").assertIsDisplayed()

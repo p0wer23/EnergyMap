@@ -1,5 +1,6 @@
 package com.punith.energymap.ui
 
+import androidx.compose.ui.graphics.Color
 import com.punith.energymap.data.EnergyEntry
 import java.time.Instant
 import java.time.LocalDate
@@ -7,10 +8,10 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-data class EnergyDaySection(
-    val dateLabel: String,
-    val entries: List<EnergyEntry>,
-)
+enum class EnergyEntryFilter {
+    TODAY,
+    PREVIOUS,
+}
 
 sealed interface EnergyEditorMode {
     data object Add : EnergyEditorMode
@@ -31,7 +32,9 @@ data class EnergyMapUiState(
     val latestOverallEntry: EnergyEntry? = null,
     val hasCheckInToday: Boolean = false,
     val todayEntries: List<EnergyEntry> = emptyList(),
-    val previousDaySections: List<EnergyDaySection> = emptyList(),
+    val previousEntries: List<EnergyEntry> = emptyList(),
+    val selectedEntryFilter: EnergyEntryFilter = EnergyEntryFilter.TODAY,
+    val expandedEntryId: Long? = null,
     val editorState: EnergyEditorState = EnergyEditorState(),
     val pendingDeleteEntry: EnergyEntry? = null,
 )
@@ -40,7 +43,7 @@ data class EnergyDerivedState(
     val currentEnergy: EnergyEntry?,
     val latestOverallEntry: EnergyEntry?,
     val todayEntries: List<EnergyEntry>,
-    val previousDaySections: List<EnergyDaySection>,
+    val previousEntries: List<EnergyEntry>,
 )
 
 object EnergyMapTestTags {
@@ -51,26 +54,18 @@ object EnergyMapTestTags {
     const val SAVE_CHECK_IN_BUTTON = "save_check_in_button"
     const val DELETE_CHECK_IN_BUTTON = "delete_check_in_button"
     const val DELETE_CONFIRM_BUTTON = "delete_confirm_button"
+    const val TODAY_FILTER_BUTTON = "today_filter_button"
+    const val PREVIOUS_FILTER_BUTTON = "previous_filter_button"
     const val ENERGY_ENTRY_PREFIX = "energy_entry_"
+    const val ENERGY_ENTRY_NOTE_PREFIX = "energy_entry_note_"
+    const val ENERGY_ENTRY_EDIT_PREFIX = "energy_entry_edit_"
 }
 
 private val timeFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
 
-private val dayFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())
-
 private val dateTimeFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern("EEE, MMM d, h:mm a", Locale.getDefault())
-
-fun energyBucketLabel(level: Int): String =
-    when (level) {
-        in 1..2 -> "exhausted"
-        in 3..4 -> "low"
-        in 5..6 -> "neutral"
-        in 7..8 -> "good"
-        else -> "high"
-    }
 
 fun deriveEnergyState(
     entries: List<EnergyEntry>,
@@ -80,23 +75,13 @@ fun deriveEnergyState(
     val sortedEntries = entries.sortedByDescending(EnergyEntry::timestamp)
     val today = localDateAt(nowMillis, zoneId)
     val todayEntries = sortedEntries.filter { localDateAt(it.timestamp, zoneId) == today }
-    val previousDaySections = sortedEntries
-        .filterNot { localDateAt(it.timestamp, zoneId) == today }
-        .groupBy { localDateAt(it.timestamp, zoneId) }
-        .entries
-        .sortedByDescending { it.key }
-        .map { (date, dayEntries) ->
-            EnergyDaySection(
-                dateLabel = formatDayLabel(date),
-                entries = dayEntries,
-            )
-        }
+    val previousEntries = sortedEntries.filterNot { localDateAt(it.timestamp, zoneId) == today }
 
     return EnergyDerivedState(
         currentEnergy = todayEntries.firstOrNull(),
         latestOverallEntry = sortedEntries.firstOrNull(),
         todayEntries = todayEntries,
-        previousDaySections = previousDaySections,
+        previousEntries = previousEntries,
     )
 }
 
@@ -106,27 +91,47 @@ fun buildUpdatedEnergyEntry(
     newNote: String,
 ): EnergyEntry = existing.copy(energyLevel = newLevel, note = newNote)
 
+fun defaultNewEnergyLevel(latestOverallEntry: EnergyEntry?): Int =
+    latestOverallEntry?.energyLevel ?: 5
+
 fun formatTime(timestamp: Long, zoneId: ZoneId = ZoneId.systemDefault()): String =
     Instant.ofEpochMilli(timestamp).atZone(zoneId).format(timeFormatter)
 
 fun formatDateTime(timestamp: Long, zoneId: ZoneId = ZoneId.systemDefault()): String =
     Instant.ofEpochMilli(timestamp).atZone(zoneId).format(dateTimeFormatter)
 
-fun formatLastRecordedText(
-    timestamp: Long,
-    nowMillis: Long,
-    zoneId: ZoneId = ZoneId.systemDefault(),
-): String {
-    val entryDate = localDateAt(timestamp, zoneId)
-    val today = localDateAt(nowMillis, zoneId)
-    val dayText = when (entryDate) {
-        today.minusDays(1) -> "yesterday"
-        else -> formatDayLabel(entryDate)
-    }
-    return "Last recorded $dayText at ${formatTime(timestamp, zoneId)}"
-}
-
 private fun localDateAt(timestamp: Long, zoneId: ZoneId): LocalDate =
     Instant.ofEpochMilli(timestamp).atZone(zoneId).toLocalDate()
 
-private fun formatDayLabel(date: LocalDate): String = date.format(dayFormatter)
+fun energyScoreColor(level: Int): Color {
+    val clampedLevel = level.coerceIn(1, 10)
+    val fraction = (clampedLevel - 1) / 9f
+    val red = 0xFFB3261E
+    val green = 0xFF4CAF50
+    return lerpColor(
+        start = Color(red),
+        end = Color(green),
+        fraction = fraction,
+    )
+}
+
+fun isExpandableNote(note: String): Boolean = note.trim().split(WHITESPACE_REGEX).filter(String::isNotBlank).size > 20
+
+fun truncatedNotePreview(note: String): String {
+    val words = note.trim().split(WHITESPACE_REGEX).filter(String::isNotBlank)
+    return if (words.size <= 20) {
+        note.trim()
+    } else {
+        words.take(20).joinToString(" ") + "..."
+    }
+}
+
+private fun lerpColor(start: Color, end: Color, fraction: Float): Color =
+    Color(
+        red = start.red + ((end.red - start.red) * fraction),
+        green = start.green + ((end.green - start.green) * fraction),
+        blue = start.blue + ((end.blue - start.blue) * fraction),
+        alpha = start.alpha + ((end.alpha - start.alpha) * fraction),
+    )
+
+private val WHITESPACE_REGEX = Regex("\\s+")

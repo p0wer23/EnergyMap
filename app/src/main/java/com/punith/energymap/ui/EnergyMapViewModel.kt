@@ -26,6 +26,8 @@ class EnergyMapViewModel(
 
     private val editorState = MutableStateFlow(EnergyEditorState())
     private val pendingDeleteEntry = MutableStateFlow<EnergyEntry?>(null)
+    private val selectedEntryFilter = MutableStateFlow(EnergyEntryFilter.TODAY)
+    private val expandedEntryId = MutableStateFlow<Long?>(null)
 
     private val energyEntriesFlow = repository.observeEnergyEntries().onEach { latestEnergyEntries = it }
 
@@ -34,7 +36,9 @@ class EnergyMapViewModel(
             energyEntriesFlow,
             editorState,
             pendingDeleteEntry,
-        ) { energyEntries, editor, pendingDelete ->
+            selectedEntryFilter,
+            expandedEntryId,
+        ) { energyEntries, editor, pendingDelete, filter, expandedId ->
             val derivedState = deriveEnergyState(
                 entries = energyEntries,
                 nowMillis = currentTimeMillis(),
@@ -45,7 +49,9 @@ class EnergyMapViewModel(
                 latestOverallEntry = derivedState.latestOverallEntry,
                 hasCheckInToday = derivedState.todayEntries.isNotEmpty(),
                 todayEntries = derivedState.todayEntries,
-                previousDaySections = derivedState.previousDaySections,
+                previousEntries = derivedState.previousEntries,
+                selectedEntryFilter = filter,
+                expandedEntryId = expandedId,
                 editorState = editor,
                 pendingDeleteEntry = pendingDelete,
             )
@@ -56,16 +62,16 @@ class EnergyMapViewModel(
         )
 
     fun onAddEnergyClick() {
-        val latestTodayEntry = deriveEnergyState(
+        val latestEntry = deriveEnergyState(
             entries = latestEnergyEntries,
             nowMillis = currentTimeMillis(),
             zoneId = zoneId,
-        ).todayEntries.firstOrNull()
+        ).latestOverallEntry
 
         editorState.value = EnergyEditorState(
             isVisible = true,
             mode = EnergyEditorMode.Add,
-            level = latestTodayEntry?.energyLevel ?: 5,
+            level = defaultNewEnergyLevel(latestEntry),
             note = "",
             timestampText = null,
         )
@@ -114,8 +120,19 @@ class EnergyMapViewModel(
                     )
                 }
             }
-            onDismissDialogs()
+            editorState.value = EnergyEditorState()
+            pendingDeleteEntry.value = null
+            selectedEntryFilter.value = EnergyEntryFilter.TODAY
+            expandedEntryId.value = null
         }
+    }
+
+    fun onEntryFilterChange(filter: EnergyEntryFilter) {
+        selectedEntryFilter.value = filter
+    }
+
+    fun onToggleExpandedEntry(entryId: Long) {
+        expandedEntryId.value = if (expandedEntryId.value == entryId) null else entryId
     }
 
     fun onRequestDelete(entry: EnergyEntry) {

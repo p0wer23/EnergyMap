@@ -1,0 +1,5 @@
+com.punith.energymap.test.app-updated_navigation_xml-0 /home/punith/Desktop/android_apps/EnergyMap/app/build/generated/updated_navigation_xml/debugAndroidTest
+com.punith.energymap.test.app-packageDebugAndroidTestResources-1 /home/punith/Desktop/android_apps/EnergyMap/app/build/intermediates/incremental/debugAndroidTest/packageDebugAndroidTestResources/merged.dir
+com.punith.energymap.test.app-packageDebugAndroidTestResources-2 /home/punith/Desktop/android_apps/EnergyMap/app/build/intermediates/incremental/debugAndroidTest/packageDebugAndroidTestResources/stripped.dir
+com.punith.energymap.test.app-debugAndroidTest-3 /home/punith/Desktop/android_apps/EnergyMap/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources
+gradleHome-0 /home/punith/.gradle

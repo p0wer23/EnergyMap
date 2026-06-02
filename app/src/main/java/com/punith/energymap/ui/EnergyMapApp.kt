@@ -1,28 +1,35 @@
 package com.punith.energymap.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,11 +38,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,6 +68,8 @@ fun EnergyMapApp(
             uiState = uiState,
             onAddEnergyClick = viewModel::onAddEnergyClick,
             onEditEnergyClick = viewModel::onEditEnergyClick,
+            onEntryFilterChange = viewModel::onEntryFilterChange,
+            onToggleExpandedEntry = viewModel::onToggleExpandedEntry,
             onEditorLevelChange = viewModel::onEditorLevelChange,
             onEditorNoteChange = viewModel::onEditorNoteChange,
             onSaveEnergy = viewModel::onSaveEnergy,
@@ -72,6 +85,8 @@ fun EnergyMapScreen(
     uiState: EnergyMapUiState,
     onAddEnergyClick: () -> Unit,
     onEditEnergyClick: (EnergyEntry) -> Unit,
+    onEntryFilterChange: (EnergyEntryFilter) -> Unit,
+    onToggleExpandedEntry: (Long) -> Unit,
     onEditorLevelChange: (Int) -> Unit,
     onEditorNoteChange: (String) -> Unit,
     onSaveEnergy: () -> Unit,
@@ -79,6 +94,11 @@ fun EnergyMapScreen(
     onConfirmDelete: () -> Unit,
     onDismissDialogs: () -> Unit,
 ) {
+    val visibleEntries = when (uiState.selectedEntryFilter) {
+        EnergyEntryFilter.TODAY -> uiState.todayEntries
+        EnergyEntryFilter.PREVIOUS -> uiState.previousEntries
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -105,58 +125,36 @@ fun EnergyMapScreen(
         }
 
         item {
-            SectionHeader(title = stringResource(id = R.string.today_check_ins_title))
+            EntryFilterSelector(
+                selectedFilter = uiState.selectedEntryFilter,
+                onEntryFilterChange = onEntryFilterChange,
+            )
         }
 
-        if (uiState.todayEntries.isEmpty()) {
+        if (visibleEntries.isEmpty()) {
             item {
                 EmptySectionCard(
-                    message = stringResource(id = R.string.no_today_check_ins),
+                    message = when (uiState.selectedEntryFilter) {
+                        EnergyEntryFilter.TODAY -> stringResource(id = R.string.no_today_check_ins)
+                        EnergyEntryFilter.PREVIOUS -> stringResource(id = R.string.no_previous_check_ins)
+                    },
                 )
             }
         } else {
-            itemsIndexed(
-                items = uiState.todayEntries,
-                key = { _, entry -> entry.id },
-            ) { index, entry ->
+            items(
+                items = visibleEntries,
+                key = EnergyEntry::id,
+            ) { entry ->
                 EnergyEntryRow(
                     entry = entry,
-                    isLatest = index == 0,
-                    onClick = { onEditEnergyClick(entry) },
+                    timestampText = when (uiState.selectedEntryFilter) {
+                        EnergyEntryFilter.TODAY -> formatTime(entry.timestamp)
+                        EnergyEntryFilter.PREVIOUS -> formatDateTime(entry.timestamp)
+                    },
+                    expanded = uiState.expandedEntryId == entry.id,
+                    onToggleExpanded = { onToggleExpandedEntry(entry.id) },
+                    onEditClick = { onEditEnergyClick(entry) },
                 )
-            }
-        }
-
-        item {
-            SectionHeader(title = stringResource(id = R.string.previous_days_title))
-        }
-
-        if (uiState.previousDaySections.isEmpty()) {
-            item {
-                EmptySectionCard(
-                    message = stringResource(id = R.string.no_previous_check_ins),
-                )
-            }
-        } else {
-            itemsIndexed(
-                items = uiState.previousDaySections,
-                key = { _, section -> section.dateLabel },
-            ) { _, section ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = section.dateLabel,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                    section.entries.forEach { entry ->
-                        EnergyEntryRow(
-                            entry = entry,
-                            isLatest = false,
-                            onClick = { onEditEnergyClick(entry) },
-                        )
-                    }
-                }
             }
         }
 
@@ -173,7 +171,10 @@ fun EnergyMapScreen(
             onSave = onSaveEnergy,
             onDelete = {
                 val editingEntry = (uiState.editorState.mode as? EnergyEditorMode.Edit)
-                    ?.let { mode -> uiState.todayEntries.firstOrNull { it.id == mode.entryId } ?: uiState.previousDaySections.flatMap(EnergyDaySection::entries).firstOrNull { it.id == mode.entryId } }
+                    ?.let { mode ->
+                        uiState.todayEntries.firstOrNull { it.id == mode.entryId }
+                            ?: uiState.previousEntries.firstOrNull { it.id == mode.entryId }
+                    }
                 if (editingEntry != null) {
                     onRequestDelete(editingEntry)
                 }
@@ -217,6 +218,8 @@ private fun CurrentEnergyCard(
     latestOverallEntry: EnergyEntry?,
     onAddEnergyClick: () -> Unit,
 ) {
+    val addEnergyContentDescription = stringResource(id = R.string.add_energy_content_description)
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -227,73 +230,115 @@ private fun CurrentEnergyCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
-                text = stringResource(id = R.string.current_energy_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.current_energy_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                FilledTonalIconButton(
+                    onClick = onAddEnergyClick,
+                    modifier = Modifier
+                        .testTag(EnergyMapTestTags.ADD_CHECK_IN_BUTTON)
+                        .semantics {
+                            contentDescription = addEnergyContentDescription
+                        },
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.add_check_in_symbol),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
 
             if (currentEnergy == null) {
                 Text(
                     text = stringResource(id = R.string.no_current_energy),
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                if (latestOverallEntry != null) {
+                latestOverallEntry?.let { entry ->
                     Text(
-                        text = formatLastRecordedText(
-                            timestamp = latestOverallEntry.timestamp,
-                            nowMillis = System.currentTimeMillis(),
+                        text = stringResource(
+                            id = R.string.last_recorded_value,
+                            formatDateTime(entry.timestamp),
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
-                Text(
-                    text = stringResource(
-                        id = R.string.energy_level_value,
-                        currentEnergy.energyLevel,
-                    ),
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = energyBucketLabel(currentEnergy.energyLevel),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    text = formatDateTime(currentEnergy.timestamp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (currentEnergy.note.isNotBlank()) {
-                    Text(
-                        text = currentEnergy.note,
-                        style = MaterialTheme.typography.bodyLarge,
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ScoreCircle(
+                        score = currentEnergy.energyLevel,
+                        circleColor = energyScoreColor(currentEnergy.energyLevel),
+                        size = 88.dp,
+                        textStyle = MaterialTheme.typography.headlineMedium,
                     )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = formatDateTime(currentEnergy.timestamp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (currentEnergy.note.isNotBlank()) {
+                            Text(
+                                text = currentEnergy.note,
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+                    }
                 }
-            }
-
-            Button(
-                onClick = onAddEnergyClick,
-                modifier = Modifier.testTag(EnergyMapTestTags.ADD_CHECK_IN_BUTTON),
-            ) {
-                Text(text = stringResource(id = R.string.add_check_in_action))
             }
         }
     }
 }
 
 @Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.SemiBold,
-    )
+private fun EntryFilterSelector(
+    selectedFilter: EnergyEntryFilter,
+    onEntryFilterChange: (EnergyEntryFilter) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            text = stringResource(id = R.string.energy_history_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            SegmentedButton(
+                selected = selectedFilter == EnergyEntryFilter.TODAY,
+                onClick = { onEntryFilterChange(EnergyEntryFilter.TODAY) },
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = 0,
+                    count = 2,
+                ),
+                modifier = Modifier.testTag(EnergyMapTestTags.TODAY_FILTER_BUTTON),
+            ) {
+                Text(text = stringResource(id = R.string.today_filter_label))
+            }
+            SegmentedButton(
+                selected = selectedFilter == EnergyEntryFilter.PREVIOUS,
+                onClick = { onEntryFilterChange(EnergyEntryFilter.PREVIOUS) },
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = 1,
+                    count = 2,
+                ),
+                modifier = Modifier.testTag(EnergyMapTestTags.PREVIOUS_FILTER_BUTTON),
+            ) {
+                Text(text = stringResource(id = R.string.previous_filter_label))
+            }
+        }
+    }
 }
 
 @Composable
@@ -316,58 +361,105 @@ private fun EmptySectionCard(message: String) {
 @Composable
 private fun EnergyEntryRow(
     entry: EnergyEntry,
-    isLatest: Boolean,
-    onClick: () -> Unit,
+    timestampText: String,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit,
+    onEditClick: () -> Unit,
 ) {
+    val editEntryContentDescription = stringResource(id = R.string.edit_entry_content_description)
+    val isExpandable = isExpandableNote(entry.note)
+    val noteText = when {
+        entry.note.isBlank() -> null
+        expanded || !isExpandable -> entry.note
+        else -> truncatedNotePreview(entry.note)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .testTag("${EnergyMapTestTags.ENERGY_ENTRY_PREFIX}${entry.id}"),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+            ScoreCircle(
+                score = entry.energyLevel,
+                circleColor = energyScoreColor(entry.energyLevel),
+                size = 54.dp,
+                textStyle = MaterialTheme.typography.titleMedium,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = timestampText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                noteText?.let { note ->
                     Text(
-                        text = formatTime(entry.timestamp),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = stringResource(
-                            id = R.string.energy_entry_summary,
-                            entry.energyLevel,
-                            energyBucketLabel(entry.energyLevel),
-                        ),
+                        text = note,
                         style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                if (isLatest) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(text = stringResource(id = R.string.latest_chip)) },
+                        modifier = Modifier
+                            .testTag("${EnergyMapTestTags.ENERGY_ENTRY_NOTE_PREFIX}${entry.id}")
+                            .then(
+                                if (isExpandable) {
+                                    Modifier.clickable(onClick = onToggleExpanded)
+                                } else {
+                                    Modifier
+                                },
+                            ),
                     )
                 }
             }
-            if (entry.note.isNotBlank()) {
+            FilledTonalIconButton(
+                onClick = onEditClick,
+                modifier = Modifier
+                    .size(36.dp)
+                    .testTag("${EnergyMapTestTags.ENERGY_ENTRY_EDIT_PREFIX}${entry.id}")
+                    .semantics {
+                        contentDescription = editEntryContentDescription
+                    },
+            ) {
                 Text(
-                    text = entry.note,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(id = R.string.edit_entry_symbol),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ScoreCircle(
+    score: Int,
+    circleColor: Color,
+    size: androidx.compose.ui.unit.Dp,
+    textStyle: androidx.compose.ui.text.TextStyle,
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(circleColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = score.toString(),
+            style = textStyle,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
@@ -406,10 +498,7 @@ private fun EnergyEditorDialog(
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = stringResource(
-                            id = R.string.energy_level_value,
-                            editorState.level,
-                        ),
+                        text = editorState.level.toString(),
                         style = MaterialTheme.typography.headlineMedium,
                     )
                     Slider(
@@ -418,11 +507,6 @@ private fun EnergyEditorDialog(
                         valueRange = 1f..10f,
                         steps = 8,
                         modifier = Modifier.testTag(EnergyMapTestTags.ENERGY_SLIDER),
-                    )
-                    Text(
-                        text = energyBucketLabel(editorState.level),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
 

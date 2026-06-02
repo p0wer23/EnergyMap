@@ -8,3 +8,4 @@ Rules:
 - after every implementation, rebuild the APK
 - after every implementation, MUST update the markdown docs if behavior, scope, or stack changed
 - stay aligned with the stack in `tech_stack.md`
+- NEVER run android emulator. The PC is not capable enough to run it.

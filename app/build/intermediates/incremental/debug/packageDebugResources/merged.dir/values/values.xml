@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <color name="ic_launcher_background">#102A43</color>
-    <string name="add_check_in_action">Add Check-in</string>
+    <string name="add_check_in_symbol">+</string>
+    <string name="add_energy_content_description">Add energy</string>
     <string name="app_name">EnergyMap</string>
     <string name="cancel_action">Cancel</string>
     <string name="current_energy_title">Current Energy</string>
@@ -9,19 +10,20 @@
     <string name="delete_dialog_message">Remove the check-in recorded at %1$s?</string>
     <string name="delete_dialog_title">Delete check-in?</string>
     <string name="edit_check_in_title">Edit Energy Check-in</string>
-    <string name="energy_entry_summary">%1$d/10 • %2$s</string>
-    <string name="energy_level_value">%1$d/10</string>
-    <string name="latest_chip">Latest</string>
+    <string name="edit_entry_content_description">Edit check-in</string>
+    <string name="edit_entry_symbol">></string>
+    <string name="energy_history_title">Energy Check-ins</string>
+    <string name="last_recorded_value">Last recorded %1$s</string>
     <string name="new_check_in_title">New Energy Check-in</string>
     <string name="no_current_energy">No energy check-in yet today.</string>
     <string name="no_previous_check_ins">No previous check-ins yet.</string>
     <string name="no_today_check_ins">No check-ins recorded for today.</string>
     <string name="note_label">Note</string>
     <string name="note_placeholder">Optional note</string>
-    <string name="previous_days_title">Previous Days</string>
+    <string name="previous_filter_label">Previous</string>
     <string name="recorded_at_label">Recorded at</string>
     <string name="save_action">Save</string>
-    <string name="today_check_ins_title">Today\'s Check-ins</string>
+    <string name="today_filter_label">Today</string>
     <style name="Theme.EnergyMap" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
