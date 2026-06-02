@@ -1,10 +1,25 @@
 {
     "logs": [
         {
+            "outputFile": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-mergeDebugResources-39:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "/home/punith/.gradle/caches/9.4.1/transforms/71341c5bbd5103c63d73486b940f9f39/transformed/material3/res/values-v30/values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        },
+        {
             "outputFile": "com.punith.energymap.app-mergeDebugResources-39:/values-v30/values-v30.xml",
             "map": [
                 {
-                    "source": "/home/punith/.gradle/caches/9.4.1/transforms/7badb384f2f2d22865837003ddaaaf4b/transformed/material3/res/values-v30/values-v30.xml",
+                    "source": "/home/punith/.gradle/caches/9.4.1/transforms/71341c5bbd5103c63d73486b940f9f39/transformed/material3/res/values-v30/values-v30.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -10,8 +10,12 @@ class EnergyRepository(
 
     fun observeActivityEntries(): Flow<List<ActivityEntry>> = activityDao.observeEntries()
 
-    suspend fun addEnergyEntry(entry: EnergyEntry) {
-        energyDao.insert(entry)
+    suspend fun saveEnergyEntry(entry: EnergyEntry) {
+        energyDao.upsert(entry)
+    }
+
+    suspend fun deleteEnergyEntry(entry: EnergyEntry) {
+        energyDao.delete(entry)
     }
 
     suspend fun addActivityEntry(entry: ActivityEntry) {

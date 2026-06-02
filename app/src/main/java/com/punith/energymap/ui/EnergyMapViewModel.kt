@@ -3,54 +3,51 @@ package com.punith.energymap.ui
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewModelScope
-import com.punith.energymap.data.ActivityEntry
 import com.punith.energymap.data.AppDatabase
 import com.punith.energymap.data.EnergyEntry
 import com.punith.energymap.data.EnergyRepository
+import java.time.ZoneId
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class TimelineItem(
-    val title: String,
-    val subtitle: String,
-)
-
-data class EnergyMapUiState(
-    val energyEntries: List<EnergyEntry> = emptyList(),
-    val activityEntries: List<ActivityEntry> = emptyList(),
-    val timelineItems: List<TimelineItem> = emptyList(),
-)
-
 class EnergyMapViewModel(
     private val repository: EnergyRepository,
+    private val currentTimeMillis: () -> Long = System::currentTimeMillis,
+    private val zoneId: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
+    private var latestEnergyEntries: List<EnergyEntry> = emptyList()
+
+    private val editorState = MutableStateFlow(EnergyEditorState())
+    private val pendingDeleteEntry = MutableStateFlow<EnergyEntry?>(null)
+
+    private val energyEntriesFlow = repository.observeEnergyEntries().onEach { latestEnergyEntries = it }
+
     val uiState: StateFlow<EnergyMapUiState> =
         combine(
-            repository.observeEnergyEntries(),
-            repository.observeActivityEntries(),
-        ) { energyEntries, activityEntries ->
-            val timeline = buildList {
-                energyEntries.forEach { add(TimelineItem("Energy ${it.energyLevel}/10", it.note.ifBlank { "No note" })) }
-                activityEntries.forEach {
-                    add(
-                        TimelineItem(
-                            title = it.title,
-                            subtitle = if (it.isOngoing) "Ongoing activity" else it.note.ifBlank { "Completed activity" },
-                        ),
-                    )
-                }
-            }.sortedByDescending { it.title }
-
+            energyEntriesFlow,
+            editorState,
+            pendingDeleteEntry,
+        ) { energyEntries, editor, pendingDelete ->
+            val derivedState = deriveEnergyState(
+                entries = energyEntries,
+                nowMillis = currentTimeMillis(),
+                zoneId = zoneId,
+            )
             EnergyMapUiState(
-                energyEntries = energyEntries,
-                activityEntries = activityEntries,
-                timelineItems = timeline,
+                currentEnergy = derivedState.currentEnergy,
+                latestOverallEntry = derivedState.latestOverallEntry,
+                hasCheckInToday = derivedState.todayEntries.isNotEmpty(),
+                todayEntries = derivedState.todayEntries,
+                previousDaySections = derivedState.previousDaySections,
+                editorState = editor,
+                pendingDeleteEntry = pendingDelete,
             )
         }.stateIn(
             scope = viewModelScope,
@@ -58,26 +55,85 @@ class EnergyMapViewModel(
             initialValue = EnergyMapUiState(),
         )
 
-    fun seedSampleData() {
+    fun onAddEnergyClick() {
+        val latestTodayEntry = deriveEnergyState(
+            entries = latestEnergyEntries,
+            nowMillis = currentTimeMillis(),
+            zoneId = zoneId,
+        ).todayEntries.firstOrNull()
+
+        editorState.value = EnergyEditorState(
+            isVisible = true,
+            mode = EnergyEditorMode.Add,
+            level = latestTodayEntry?.energyLevel ?: 5,
+            note = "",
+            timestampText = null,
+        )
+    }
+
+    fun onEditEnergyClick(entry: EnergyEntry) {
+        editorState.value = EnergyEditorState(
+            isVisible = true,
+            mode = EnergyEditorMode.Edit(entry.id),
+            level = entry.energyLevel,
+            note = entry.note,
+            timestampText = formatDateTime(entry.timestamp, zoneId),
+        )
+    }
+
+    fun onEditorLevelChange(level: Int) {
+        editorState.value = editorState.value.copy(level = level.coerceIn(1, 10))
+    }
+
+    fun onEditorNoteChange(note: String) {
+        editorState.value = editorState.value.copy(note = note)
+    }
+
+    fun onSaveEnergy() {
+        val currentEditor = editorState.value
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
-            repository.addEnergyEntry(
-                EnergyEntry(
-                    timestamp = now,
-                    energyLevel = 7,
-                    note = "Setup verification entry",
-                ),
-            )
-            repository.addActivityEntry(
-                ActivityEntry(
-                    title = "Initial walkthrough",
-                    startTime = now - 45 * 60 * 1000,
-                    endTime = now,
-                    note = "Created during project setup",
-                    isOngoing = false,
-                ),
-            )
+            when (val mode = currentEditor.mode) {
+                EnergyEditorMode.Add -> {
+                    repository.saveEnergyEntry(
+                        EnergyEntry(
+                            timestamp = currentTimeMillis(),
+                            energyLevel = currentEditor.level,
+                            note = currentEditor.note.trim(),
+                        ),
+                    )
+                }
+
+                is EnergyEditorMode.Edit -> {
+                    val existingEntry = latestEnergyEntries.firstOrNull { it.id == mode.entryId } ?: return@launch
+                    repository.saveEnergyEntry(
+                        buildUpdatedEnergyEntry(
+                            existing = existingEntry,
+                            newLevel = currentEditor.level,
+                            newNote = currentEditor.note.trim(),
+                        ),
+                    )
+                }
+            }
+            onDismissDialogs()
         }
+    }
+
+    fun onRequestDelete(entry: EnergyEntry) {
+        pendingDeleteEntry.value = entry
+        editorState.value = editorState.value.copy(isVisible = false)
+    }
+
+    fun onConfirmDelete() {
+        val entryToDelete = pendingDeleteEntry.value ?: return
+        viewModelScope.launch {
+            repository.deleteEnergyEntry(entryToDelete)
+            onDismissDialogs()
+        }
+    }
+
+    fun onDismissDialogs() {
+        editorState.value = EnergyEditorState()
+        pendingDeleteEntry.value = null
     }
 
     companion object {

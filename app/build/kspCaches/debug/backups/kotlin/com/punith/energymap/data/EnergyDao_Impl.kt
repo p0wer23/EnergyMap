@@ -1,6 +1,8 @@
 package com.punith.energymap.`data`
 
+import androidx.room.EntityDeleteOrUpdateAdapter
 import androidx.room.EntityInsertAdapter
+import androidx.room.EntityUpsertAdapter
 import androidx.room.RoomDatabase
 import androidx.room.coroutines.createFlow
 import androidx.room.util.getColumnIndexOrThrow
@@ -25,11 +27,20 @@ public class EnergyDao_Impl(
 ) : EnergyDao {
   private val __db: RoomDatabase
 
-  private val __insertAdapterOfEnergyEntry: EntityInsertAdapter<EnergyEntry>
+  private val __deleteAdapterOfEnergyEntry: EntityDeleteOrUpdateAdapter<EnergyEntry>
+
+  private val __upsertAdapterOfEnergyEntry: EntityUpsertAdapter<EnergyEntry>
   init {
     this.__db = __db
-    this.__insertAdapterOfEnergyEntry = object : EntityInsertAdapter<EnergyEntry>() {
-      protected override fun createQuery(): String = "INSERT OR REPLACE INTO `EnergyEntry` (`id`,`timestamp`,`energyLevel`,`note`) VALUES (nullif(?, 0),?,?,?)"
+    this.__deleteAdapterOfEnergyEntry = object : EntityDeleteOrUpdateAdapter<EnergyEntry>() {
+      protected override fun createQuery(): String = "DELETE FROM `EnergyEntry` WHERE `id` = ?"
+
+      protected override fun bind(statement: SQLiteStatement, entity: EnergyEntry) {
+        statement.bindLong(1, entity.id)
+      }
+    }
+    this.__upsertAdapterOfEnergyEntry = EntityUpsertAdapter<EnergyEntry>(object : EntityInsertAdapter<EnergyEntry>() {
+      protected override fun createQuery(): String = "INSERT INTO `EnergyEntry` (`id`,`timestamp`,`energyLevel`,`note`) VALUES (nullif(?, 0),?,?,?)"
 
       protected override fun bind(statement: SQLiteStatement, entity: EnergyEntry) {
         statement.bindLong(1, entity.id)
@@ -37,11 +48,25 @@ public class EnergyDao_Impl(
         statement.bindLong(3, entity.energyLevel.toLong())
         statement.bindText(4, entity.note)
       }
-    }
+    }, object : EntityDeleteOrUpdateAdapter<EnergyEntry>() {
+      protected override fun createQuery(): String = "UPDATE `EnergyEntry` SET `id` = ?,`timestamp` = ?,`energyLevel` = ?,`note` = ? WHERE `id` = ?"
+
+      protected override fun bind(statement: SQLiteStatement, entity: EnergyEntry) {
+        statement.bindLong(1, entity.id)
+        statement.bindLong(2, entity.timestamp)
+        statement.bindLong(3, entity.energyLevel.toLong())
+        statement.bindText(4, entity.note)
+        statement.bindLong(5, entity.id)
+      }
+    })
   }
 
-  public override suspend fun insert(entry: EnergyEntry): Unit = performSuspending(__db, false, true) { _connection ->
-    __insertAdapterOfEnergyEntry.insert(_connection, entry)
+  public override suspend fun delete(entry: EnergyEntry): Unit = performSuspending(__db, false, true) { _connection ->
+    __deleteAdapterOfEnergyEntry.handle(_connection, entry)
+  }
+
+  public override suspend fun upsert(entry: EnergyEntry): Unit = performSuspending(__db, false, true) { _connection ->
+    __upsertAdapterOfEnergyEntry.upsert(_connection, entry)
   }
 
   public override fun observeEntries(): Flow<List<EnergyEntry>> {

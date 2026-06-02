@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.punith.energymap.ui.EnergyCheckInModelsTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-06-02T15:25:42.958Z" hostname="punith-Inspiron-14-5410-2-in-1" time="0.045">
+  <properties/>
+  <testcase name="previousDayGroupsAreSortedNewestFirst" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.039"/>
+  <testcase name="latestTodayEntryIsSelectedAsCurrentEnergy" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="entriesAreSplitIntoTodayAndPreviousDaysUsingLocalDate" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="deletingEntryRemovesItFromDerivedState" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="currentEnergyIsNullWhenThereIsNoEntryToday" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="energyLabelBucketsMatchRequirements" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="editingPreservesOriginalTimestamp" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

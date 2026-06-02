@@ -14,7 +14,9 @@ EnergyMap is a local-only Android app for tracking:
 - energy score from `1-10`
 - timestamp
 - optional note
+- multiple timestamped check-ins allowed per day
 - editable and deletable
+- v1 edit flow changes level and note, not timestamp
 
 Suggested labels:
 
