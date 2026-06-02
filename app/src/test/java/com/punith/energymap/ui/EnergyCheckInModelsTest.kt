@@ -78,19 +78,35 @@ class EnergyCheckInModelsTest {
     }
 
     @Test
-    fun truncatedNotePreviewLeavesTwentyWordsIntact() {
-        val note = (1..20).joinToString(" ") { "word$it" }
+    fun truncatedNotePreviewLeavesFifteenCharactersIntact() {
+        val note = "123456789012345"
 
         assertFalse(isExpandableNote(note))
         assertEquals(note, truncatedNotePreview(note))
     }
 
     @Test
-    fun truncatedNotePreviewCutsOffAfterTwentyWords() {
-        val note = (1..21).joinToString(" ") { "word$it" }
+    fun truncatedNotePreviewCutsOffAfterFifteenCharacters() {
+        val note = "1234567890123456"
 
         assertTrue(isExpandableNote(note))
-        assertEquals((1..20).joinToString(" ") { "word$it" } + "...", truncatedNotePreview(note))
+        assertEquals("123456789012345...", truncatedNotePreview(note))
+    }
+
+    @Test
+    fun isExpandableNoteUsesTrimmedCharacterLength() {
+        val note = "   hello there world   "
+
+        assertTrue(isExpandableNote(note))
+        assertEquals("hello there wor...", truncatedNotePreview(note))
+    }
+
+    @Test
+    fun blankNoteIsNotExpandable() {
+        val note = "   "
+
+        assertFalse(isExpandableNote(note))
+        assertEquals("", truncatedNotePreview(note))
     }
 
     @Test

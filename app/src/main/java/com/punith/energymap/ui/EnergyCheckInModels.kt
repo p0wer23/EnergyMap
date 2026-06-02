@@ -118,14 +118,14 @@ fun energyScoreColor(level: Int): Color {
     )
 }
 
-fun isExpandableNote(note: String): Boolean = note.trim().split(WHITESPACE_REGEX).filter(String::isNotBlank).size > 20
+fun isExpandableNote(note: String): Boolean = note.trim().length > NOTE_PREVIEW_CHARACTER_LIMIT
 
 fun truncatedNotePreview(note: String): String {
-    val words = note.trim().split(WHITESPACE_REGEX).filter(String::isNotBlank)
-    return if (words.size <= 20) {
-        note.trim()
+    val trimmedNote = note.trim()
+    return if (trimmedNote.length <= NOTE_PREVIEW_CHARACTER_LIMIT) {
+        trimmedNote
     } else {
-        words.take(20).joinToString(" ") + "..."
+        trimmedNote.take(NOTE_PREVIEW_CHARACTER_LIMIT) + "..."
     }
 }
 
@@ -137,4 +137,4 @@ private fun lerpColor(start: Color, end: Color, fraction: Float): Color =
         alpha = start.alpha + ((end.alpha - start.alpha) * fraction),
     )
 
-private val WHITESPACE_REGEX = Regex("\\s+")
+private const val NOTE_PREVIEW_CHARACTER_LIMIT = 15

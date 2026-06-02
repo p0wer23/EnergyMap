@@ -13,7 +13,6 @@ string delete_dialog_message
 string delete_dialog_title
 string edit_check_in_title
 string edit_entry_content_description
-string edit_entry_symbol
 string energy_history_title
 string new_check_in_title
 string no_previous_check_ins

@@ -10,7 +10,6 @@
     <string name="delete_dialog_title">Delete check-in?</string>
     <string name="edit_check_in_title">Edit Energy Check-in</string>
     <string name="edit_entry_content_description">Edit check-in</string>
-    <string name="edit_entry_symbol">></string>
     <string name="energy_history_title">Energy Check-ins</string>
     <string name="new_check_in_title">New Energy Check-in</string>
     <string name="no_previous_check_ins">No previous check-ins yet.</string>

@@ -217,7 +217,6 @@
     <string name="dropdown_menu">"Dropdown menu"</string>
     <string name="edit_check_in_title">Edit Energy Check-in</string>
     <string name="edit_entry_content_description">Edit check-in</string>
-    <string name="edit_entry_symbol">></string>
     <string name="energy_history_title">Energy Check-ins</string>
     <string name="in_progress">In progress</string>
     <string name="indeterminate">Partially checked</string>

@@ -6,7 +6,6 @@
     <string name="no_today_check_ins">No check-ins recorded for today.</string>
     <string name="no_previous_check_ins">No previous check-ins yet.</string>
     <string name="add_check_in_symbol">+</string>
-    <string name="edit_entry_symbol">&gt;</string>
     <string name="add_energy_content_description">Add energy</string>
     <string name="edit_entry_content_description">Edit check-in</string>
     <string name="new_check_in_title">New Energy Check-in</string>

@@ -32,8 +32,8 @@ class EnergyMapScreenTest {
 
     private val nowMillis: Long = 1_717_329_600_000
     private val zoneId: ZoneId = ZoneId.of("UTC")
-    private val longNote = (1..21).joinToString(" ") { "word$it" }
-    private val longNotePreview = (1..20).joinToString(" ") { "word$it" } + "..."
+    private val longNote = "1234567890123456"
+    private val longNotePreview = "123456789012345..."
 
     @Test
     fun addEditExpandFilterAndDeleteEnergyCheckInFlowWorks() {

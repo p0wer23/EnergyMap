@@ -11,7 +11,6 @@ int string delete_dialog_message 0x0
 int string delete_dialog_title 0x0
 int string edit_check_in_title 0x0
 int string edit_entry_content_description 0x0
-int string edit_entry_symbol 0x0
 int string energy_history_title 0x0
 int string new_check_in_title 0x0
 int string no_previous_check_ins 0x0

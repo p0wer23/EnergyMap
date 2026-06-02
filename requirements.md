@@ -23,7 +23,9 @@ EnergyMap is a local-only Android app for tracking:
 - `Energy Check-ins` header keeps the `+` action on the right
 - in `Today`, the newest entry is the first row and is only slightly larger
 - in `Previous`, entries render as a normal compact history list
-- list rows use compact near-black glass containers with expandable note previews
+- note previews truncate after 15 characters and expand on tap
+- list rows use compact near-black glass containers
+- trailing edit uses an icon button, not a text glyph
 - only the score circle carries the red-to-green color scale
 
 Suggested labels:
