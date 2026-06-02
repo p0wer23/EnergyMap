@@ -4,6 +4,14 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("EnergyMap-setup-${variant.name}.apk")
+        }
+    }
+}
+
 android {
     namespace = "com.punith.energymap"
     compileSdk = 36

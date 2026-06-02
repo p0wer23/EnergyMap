@@ -1,22 +1,26 @@
 [
     {
-        "merged": "com.punith.energymap.app-debug-41:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.punith.energymap.app-main-43:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-debug-41:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-main-43:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.punith.energymap.app-debug-41:/xml_data_extraction_rules.xml.flat",
-        "source": "com.punith.energymap.app-main-43:/xml/data_extraction_rules.xml"
+        "merged": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-debug-41:/xml_backup_rules.xml.flat",
+        "source": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-main-43:/xml/backup_rules.xml"
     },
     {
         "merged": "com.punith.energymap.app-debug-41:/drawable_ic_launcher_foreground.xml.flat",
         "source": "com.punith.energymap.app-main-43:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.punith.energymap.app-debug-41:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.punith.energymap.app-main-43:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-debug-41:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-main-43:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.punith.energymap.app-debug-41:/xml_backup_rules.xml.flat",
-        "source": "com.punith.energymap.app-main-43:/xml/backup_rules.xml"
+        "merged": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-debug-41:/xml_data_extraction_rules.xml.flat",
+        "source": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-main-43:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-debug-41:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/home/punith/.gradle/daemon/9.4.1/com.punith.energymap.app-main-43:/mipmap-anydpi-v26/ic_launcher_round.xml"
     }
 ]

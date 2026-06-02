@@ -44,6 +44,11 @@ Use `Activity` as the product term, not `Task`.
 - local storage only
 - basic edit/delete for both record types
 
+## Current Setup State
+
+- setup build currently shows a minimal verification screen with `app running...`
+- app features above are still the intended v1 scope
+
 ## Data Model
 
 ### `EnergyEntry`

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <color name="ic_launcher_background">#1F4A5A</color>
+    <color name="ic_launcher_background">#102A43</color>
     <string name="app_name">EnergyMap</string>
     <style name="Theme.EnergyMap" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>

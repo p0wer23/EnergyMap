@@ -143,12 +143,9 @@
                 {
                     "source": "/home/punith/Desktop/android_apps/EnergyMap/app/src/main/res/values/themes.xml",
                     "from": {
-                        "startLines": "1",
-                        "startColumns": "4",
-                        "startOffsets": "63",
-                        "endLines": "5",
-                        "endColumns": "12",
-                        "endOffsets": "400"
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
                     },
                     "to": {
                         "startLines": "324",
@@ -177,9 +174,11 @@
                 {
                     "source": "/home/punith/Desktop/android_apps/EnergyMap/app/src/main/res/values/colors.xml",
                     "from": {
-                        "startLines": "-1",
-                        "startColumns": "-1",
-                        "startOffsets": "-1"
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "16",
+                        "endColumns": "56",
+                        "endOffsets": "68"
                     },
                     "to": {
                         "startLines": "79",

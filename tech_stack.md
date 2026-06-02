@@ -40,3 +40,4 @@ Use the latest stable versions available as of `2026-06-02`:
 - no backend
 - no DI framework in v1
 - keep architecture simple
+- debug APK output name: `EnergyMap-setup-debug.apk`
