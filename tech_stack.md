@@ -6,6 +6,7 @@ Based on `../GOAL_app` and `../Sources_list`, EnergyMap should stay on the same 
 
 - Kotlin
 - Gradle Kotlin DSL
+- Gradle Wrapper
 - Android Gradle Plugin
 - Jetpack Compose
 - Material 3
@@ -19,6 +20,7 @@ Based on `../GOAL_app` and `../Sources_list`, EnergyMap should stay on the same 
 
 Use the latest stable versions available as of `2026-06-02`:
 
+- Gradle: `9.4.1`
 - AGP: `9.2.0`
 - Kotlin: `2.3.21`
 - KSP: `2.3.9`
@@ -34,6 +36,7 @@ Use the latest stable versions available as of `2026-06-02`:
 ## Constraints
 
 - local-only app for v1
+- AGP `9.x` built-in Kotlin enabled
 - no backend
 - no DI framework in v1
 - keep architecture simple
