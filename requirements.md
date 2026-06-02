@@ -1,97 +1,72 @@
 # EnergyMap Requirements
 
-## Product Idea
+## Product
 
-EnergyMap is a personal daily timeline app for tracking activities and energy. It lets the user record what they do throughout the day and separately log quick energy check-ins. Over time, the app should help the user understand how energy changes across the day and around different activities.
+EnergyMap is a local-only Android app for tracking:
 
-## Core Concepts
+- current energy as a point-in-time check-in
+- activities done throughout the day as time-based entries
+
+## Core Records
 
 ### Energy Check-In
 
-A point-in-time snapshot of the user's current energy.
+- energy score from `1-10`
+- timestamp
+- optional note
+- editable and deletable
 
-- Energy level on a simple scale, preferably 1-5 for the first version
-- Automatic timestamp using the current time
-- Optional note
-- User should be able to edit or delete a check-in
+Suggested labels:
 
-Suggested scale:
-
-- 1: Exhausted
-- 2: Low
-- 3: Neutral
-- 4: Good
-- 5: Energized
+- `1-2`: exhausted
+- `3-4`: low
+- `5-6`: neutral
+- `7-8`: good
+- `9-10`: high
 
 ### Activity Log
 
-A duration-based record of what the user did during the day.
+- activity title
+- start time
+- end time or ongoing state
+- optional note
+- editable and deletable
 
-- Activity title/name
-- Start time
-- End time, or marked as currently ongoing
-- Optional note
-- User should be able to edit or delete an activity
-- User should be able to manually add past activities they forgot to log
+Use `Activity` as the product term, not `Task`.
 
-Use the broader term "Activity" instead of only "Task", because entries may include work, meals, breaks, commute, rest, exercise, chores, or social time.
+## V1 Scope
 
-## First-Pass Features
-
-- Quick action to log current energy
-- Quick action to start an activity
-- Ability to end the current activity
-- Ability to manually add an activity with start and end time
-- Today view showing a combined timeline of energy check-ins and activities
-- Local-only data storage
-- Basic edit and delete support for both energy check-ins and activities
-
-## Timeline Behavior
-
-The main view should show the user's day in chronological order, combining both streams.
-
-Example:
-
-```text
-8:30 AM    Energy 3/5
-9:00 AM    Started: Reading
-9:45 AM    Ended: Reading
-10:00 AM   Started: Coding
-10:30 AM   Energy 4/5
-11:15 AM   Ended: Coding
-11:30 AM   Started: Meeting
-12:00 PM   Energy 2/5
-12:15 PM   Ended: Meeting
-```
+- quick energy check-in
+- start activity
+- end current activity
+- manual activity entry with start/end time
+- combined daily timeline for energy and activities
+- local storage only
+- basic edit/delete for both record types
 
 ## Data Model
 
-### EnergyEntry
+### `EnergyEntry`
 
-- id
-- timestamp
-- energyLevel
-- note
+- `id`
+- `timestamp`
+- `energyLevel`
+- `note`
 
-### ActivityEntry
+### `ActivityEntry`
 
-- id
-- title
-- startTime
-- endTime
-- note
-- isOngoing
+- `id`
+- `title`
+- `startTime`
+- `endTime`
+- `note`
+- `isOngoing`
 
-## Out Of Scope For First Pass
+## Out Of Scope
 
-- Accounts or cloud sync
-- Advanced analytics
-- Calendar integration
-- Notifications or reminders
+- accounts
+- sync
+- reminders
+- analytics
 - AI summaries
-- Complex categories or tagging
-- Social/sharing features
-
-## First Milestone
-
-Build a local-only Android app where the user can track today's activities and log energy check-ins, then view both together in a simple daily timeline.
+- social features
