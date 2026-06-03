@@ -42,4 +42,5 @@ Use the latest stable versions available as of `2026-06-02`:
 - keep architecture simple
 - activity tracking stays on existing Compose + Room + `ViewModel` + `StateFlow` setup
 - no new dependency required for the activity timeline feature
+- timeline UI refinements stay within existing Compose/Material 3 code
 - debug APK output name: `EnergyMap-setup-debug.apk`

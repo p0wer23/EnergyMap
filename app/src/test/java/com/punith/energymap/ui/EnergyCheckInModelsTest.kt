@@ -3,6 +3,7 @@ package com.punith.energymap.ui
 import com.punith.energymap.data.ActivityEntry
 import com.punith.energymap.data.EnergyEntry
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -140,6 +141,56 @@ class EnergyCheckInModelsTest {
     }
 
     @Test
+    fun defaultManualActivityEditorStateUsesCurrentLocalTimeForToday() {
+        val today = LocalDate.of(2024, 6, 1)
+        val currentMillis = today.atTime(14, 37, 45).atZone(zoneId).toInstant().toEpochMilli()
+
+        val state = defaultManualActivityEditorState(
+            selectedDate = today,
+            today = today,
+            nowMillis = currentMillis,
+            zoneId = zoneId,
+        )
+
+        assertEquals(LocalTime.of(14, 37), state.startTime)
+        assertEquals(LocalTime.of(15, 37), state.endTime)
+        assertFalse(state.endsNextDay)
+    }
+
+    @Test
+    fun defaultManualActivityEditorStateUsesMorningSlotForPreviousDay() {
+        val today = LocalDate.of(2024, 6, 2)
+
+        val state = defaultManualActivityEditorState(
+            selectedDate = today.minusDays(1),
+            today = today,
+            nowMillis = today.atTime(14, 37).atZone(zoneId).toInstant().toEpochMilli(),
+            zoneId = zoneId,
+        )
+
+        assertEquals(LocalTime.of(9, 0), state.startTime)
+        assertEquals(LocalTime.of(10, 0), state.endTime)
+        assertFalse(state.endsNextDay)
+    }
+
+    @Test
+    fun defaultManualActivityEditorStateRollsEndIntoNextDayNearMidnight() {
+        val today = LocalDate.of(2024, 6, 1)
+        val currentMillis = today.atTime(23, 30, 59).atZone(zoneId).toInstant().toEpochMilli()
+
+        val state = defaultManualActivityEditorState(
+            selectedDate = today,
+            today = today,
+            nowMillis = currentMillis,
+            zoneId = zoneId,
+        )
+
+        assertEquals(LocalTime.of(23, 30), state.startTime)
+        assertEquals(LocalTime.of(0, 30), state.endTime)
+        assertTrue(state.endsNextDay)
+    }
+
+    @Test
     fun overlapDetectionRejectsExactOverlaps() {
         assertTrue(
             activityIntervalsOverlap(
@@ -254,5 +305,57 @@ class EnergyCheckInModelsTest {
         val blocks = state.timelineItems.filterIsInstance<DailyTimelineItem.ActivityBlock>()
         assertEquals(listOf(1L, 2L), blocks.map { it.entry.id })
         assertEquals(1, state.timelineItems.filterIsInstance<DailyTimelineItem.EnergyMarker>().size)
+    }
+
+    @Test
+    fun activityBlocksUseFullContentModeForTallBlocks() {
+        val block = singleBlockForDurationMinutes(90)
+
+        assertEquals(ActivityBlockContentMode.Full, block.contentMode)
+    }
+
+    @Test
+    fun activityBlocksUseCompactContentModeForMediumBlocks() {
+        val block = singleBlockForDurationMinutes(30)
+
+        assertEquals(ActivityBlockContentMode.Compact, block.contentMode)
+    }
+
+    @Test
+    fun activityBlocksUseTimeOnlyContentModeForShortBlocks() {
+        val block = singleBlockForDurationMinutes(15)
+
+        assertEquals(ActivityBlockContentMode.TimeOnly, block.contentMode)
+    }
+
+    @Test
+    fun activityBlocksUseNoContentModeForVeryShortBlocks() {
+        val block = singleBlockForDurationMinutes(5)
+
+        assertEquals(ActivityBlockContentMode.None, block.contentMode)
+    }
+
+    private fun singleBlockForDurationMinutes(durationMinutes: Long): DailyTimelineItem.ActivityBlock {
+        val selectedDate = LocalDate.of(2024, 6, 1)
+        val start = selectedDate.atTime(8, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val end = start + (durationMinutes * 60_000)
+        val activity = ActivityEntry(
+            id = durationMinutes,
+            title = "Test",
+            startTime = start,
+            endTime = end,
+            note = "Note",
+            isOngoing = false,
+        )
+
+        val state = deriveActivityTimelineState(
+            activityEntries = listOf(activity),
+            energyEntries = emptyList(),
+            selectedDate = selectedDate,
+            nowMillis = end,
+            zoneId = zoneId,
+        )
+
+        return state.timelineItems.filterIsInstance<DailyTimelineItem.ActivityBlock>().single()
     }
 }

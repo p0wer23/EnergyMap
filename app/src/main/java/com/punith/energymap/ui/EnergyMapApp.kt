@@ -65,10 +65,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -509,33 +511,36 @@ private fun ActivityTimelineScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilledTonalButton(
-                onClick = onOpenStartActivityDialog,
-                enabled = isTodaySelected,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag(EnergyMapTestTags.START_ACTIVITY_BUTTON),
-            ) {
-                Text(text = stringResource(id = R.string.start_activity_action))
+            if (isTodaySelected) {
+                if (uiState.currentActivity == null) {
+                    FilledTonalButton(
+                        onClick = onOpenStartActivityDialog,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(EnergyMapTestTags.START_ACTIVITY_BUTTON),
+                    ) {
+                        Text(text = stringResource(id = R.string.start_activity_action))
+                    }
+                } else {
+                    FilledTonalButton(
+                        onClick = onEndCurrentActivity,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON),
+                    ) {
+                        Text(text = stringResource(id = R.string.end_current_activity_action))
+                    }
+                }
             }
-            FilledTonalButton(
-                onClick = onEndCurrentActivity,
-                enabled = uiState.currentActivity != null,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON),
-            ) {
-                Text(text = stringResource(id = R.string.end_current_activity_action))
-            }
-        }
 
-        Button(
-            onClick = onOpenManualActivityDialog,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(EnergyMapTestTags.MANUAL_ACTIVITY_BUTTON),
-        ) {
-            Text(text = stringResource(id = R.string.manual_activity_action))
+            Button(
+                onClick = onOpenManualActivityDialog,
+                modifier = Modifier
+                    .then(if (isTodaySelected) Modifier.weight(1f) else Modifier.fillMaxWidth())
+                    .testTag(EnergyMapTestTags.MANUAL_ACTIVITY_BUTTON),
+            ) {
+                Text(text = stringResource(id = R.string.manual_activity_action))
+            }
         }
 
         uiState.activityValidationMessage?.let { message ->
@@ -777,7 +782,7 @@ private fun DailyTimeline(
             .height(timelineHeight),
     ) {
         Column(
-            modifier = Modifier.width(56.dp),
+            modifier = Modifier.width(42.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             repeat(24) { hour ->
@@ -787,7 +792,7 @@ private fun DailyTimeline(
                 ) {
                     Text(
                         text = hourLabel(hour),
-                        style = MaterialTheme.typography.labelSmall,
+                        style = TextStyle(fontSize = 10.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -814,16 +819,16 @@ private fun DailyTimeline(
                     onClick = { onEditActivityClick(block.entry) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 10.dp, end = 12.dp)
+                        .padding(start = 6.dp, end = 8.dp)
                         .offset(y = timelineHeight * block.topFraction)
-                        .height((timelineHeight * block.heightFraction).coerceAtLeast(36.dp)),
+                        .height((timelineHeight * block.heightFraction).coerceAtLeast(10.dp)),
                 )
             }
         }
 
         Box(
             modifier = Modifier
-                .width(62.dp)
+                .width(44.dp)
                 .fillMaxHeight(),
         ) {
             energyMarkers.forEach { marker ->
@@ -874,7 +879,7 @@ private fun ActivityBlockCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val label = buildString {
+    val fullLabel = buildString {
         append(block.title)
         if (block.isOngoing) append(" • ")
         if (block.isOngoing) append(stringResource(id = R.string.ongoing_label))
@@ -893,29 +898,66 @@ private fun ActivityBlockCard(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         ),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-            )
-            Text(
-                text = block.timeRangeText,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-            )
-            block.notePreview?.let { note ->
-                Text(
-                    text = note,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 2,
-                )
+        when (block.contentMode) {
+            ActivityBlockContentMode.Full -> {
+                Column(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = fullLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = block.timeRangeText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                    block.notePreview?.let { note ->
+                        Text(
+                            text = note,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                        )
+                    }
+                }
             }
+
+            ActivityBlockContentMode.Compact -> {
+                Column(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
+                ) {
+                    Text(
+                        text = block.title,
+                        style = TextStyle(fontSize = 11.sp),
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = block.timeRangeText,
+                        style = TextStyle(fontSize = 10.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+            }
+
+            ActivityBlockContentMode.TimeOnly -> {
+                Box(modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)) {
+                    Text(
+                        text = block.timeRangeText,
+                        style = TextStyle(fontSize = 9.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+            }
+
+            ActivityBlockContentMode.None -> Unit
         }
     }
 }

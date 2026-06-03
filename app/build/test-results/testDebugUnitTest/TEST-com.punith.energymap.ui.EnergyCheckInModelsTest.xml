@@ -1,21 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.punith.energymap.ui.EnergyCheckInModelsTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-06-03T04:20:29.682Z" hostname="punith-Inspiron-14-5410-2-in-1" time="0.118">
+<testsuite name="com.punith.energymap.ui.EnergyCheckInModelsTest" tests="23" skipped="0" failures="0" errors="0" timestamp="2026-06-03T08:09:33.085Z" hostname="punith-Inspiron-14-5410-2-in-1" time="0.132">
   <properties/>
-  <testcase name="blankNoteIsNotExpandable" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.022"/>
-  <testcase name="defaultNewEnergyLevelUsesLatestOverallScore" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="blankNoteIsNotExpandable" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.021"/>
+  <testcase name="defaultManualActivityEditorStateUsesCurrentLocalTimeForToday" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.003"/>
+  <testcase name="defaultNewEnergyLevelUsesLatestOverallScore" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.002"/>
   <testcase name="ongoingActivityBlocksFutureActivity" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
-  <testcase name="previousEntriesAreSortedNewestFirst" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.029"/>
-  <testcase name="crossMidnightActivityIsClippedAcrossDays" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.027"/>
-  <testcase name="timelineItemsSortByActivityTimeAndIncludeEnergyMarkers" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.026"/>
-  <testcase name="latestTodayEntryIsSelectedAsCurrentEnergy" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
-  <testcase name="isExpandableNoteUsesTrimmedCharacterLength" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.002"/>
-  <testcase name="overlapDetectionRejectsExactOverlaps" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="activityBlocksUseNoContentModeForVeryShortBlocks" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.059"/>
+  <testcase name="activityBlocksUseCompactContentModeForMediumBlocks" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="previousEntriesAreSortedNewestFirst" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.003"/>
+  <testcase name="crossMidnightActivityIsClippedAcrossDays" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="timelineItemsSortByActivityTimeAndIncludeEnergyMarkers" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.027"/>
+  <testcase name="latestTodayEntryIsSelectedAsCurrentEnergy" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="isExpandableNoteUsesTrimmedCharacterLength" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.003"/>
+  <testcase name="overlapDetectionRejectsExactOverlaps" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
   <testcase name="entriesAreSplitIntoTodayAndPreviousDaysUsingLocalDate" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
   <testcase name="truncatedNotePreviewLeavesFifteenCharactersIntact" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
-  <testcase name="energyMarkersUseSelectedDayPosition" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
-  <testcase name="currentEnergyIsNullWhenThereIsNoEntryToday" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
-  <testcase name="truncatedNotePreviewCutsOffAfterFifteenCharacters" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
-  <testcase name="adjacentActivitiesAreAllowed" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="energyMarkersUseSelectedDayPosition" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.002"/>
+  <testcase name="defaultManualActivityEditorStateUsesMorningSlotForPreviousDay" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="currentEnergyIsNullWhenThereIsNoEntryToday" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="activityBlocksUseTimeOnlyContentModeForShortBlocks" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="activityBlocksUseFullContentModeForTallBlocks" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="defaultManualActivityEditorStateRollsEndIntoNextDayNearMidnight" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
+  <testcase name="truncatedNotePreviewCutsOffAfterFifteenCharacters" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.001"/>
+  <testcase name="adjacentActivitiesAreAllowed" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
   <testcase name="editingPreservesOriginalTimestamp" classname="com.punith.energymap.ui.EnergyCheckInModelsTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>

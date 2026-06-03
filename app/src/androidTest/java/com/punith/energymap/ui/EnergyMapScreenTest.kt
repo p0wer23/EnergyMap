@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -32,7 +33,7 @@ class EnergyMapScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
 
-    private val zoneId: ZoneId = ZoneId.of("UTC")
+    private val zoneId: ZoneId = ZoneId.systemDefault()
     private val todayDate: LocalDate = LocalDate.now(zoneId)
     private val previousDate: LocalDate = todayDate.minusDays(1)
 
@@ -377,11 +378,11 @@ class EnergyMapScreenTest {
                         }
                     },
                     onOpenManualActivityDialog = {
-                        activityEditorState = ActivityEditorState(
-                            isVisible = true,
-                            mode = ActivityEditorMode.AddManual,
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(10, 0),
+                        activityEditorState = defaultManualActivityEditorState(
+                            selectedDate = selectedActivityDate,
+                            today = todayDate,
+                            nowMillis = nowMillis,
+                            zoneId = zoneId,
                         )
                     },
                     onEditActivityClick = { entry ->
@@ -462,11 +463,16 @@ class EnergyMapScreenTest {
 
         composeRule.onNodeWithTag(EnergyMapTestTags.ACTIVITY_VIEW_BUTTON).performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.ACTIVITY_TIMELINE_SCREEN).assertIsDisplayed()
+        composeRule.onNodeWithTag(EnergyMapTestTags.START_ACTIVITY_BUTTON).assertIsDisplayed()
+        composeRule.onAllNodesWithTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON).assertCountEquals(0)
+        composeRule.onNodeWithTag(EnergyMapTestTags.MANUAL_ACTIVITY_BUTTON).assertIsDisplayed()
 
         composeRule.onNodeWithTag(EnergyMapTestTags.START_ACTIVITY_BUTTON).performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.ACTIVITY_TITLE_FIELD).performTextInput("Focus")
         composeRule.onNodeWithTag(EnergyMapTestTags.ACTIVITY_SAVE_BUTTON).performClick()
         composeRule.onNodeWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}20").assertIsDisplayed()
+        composeRule.onNodeWithTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON).assertIsDisplayed()
+        composeRule.onAllNodesWithTag(EnergyMapTestTags.START_ACTIVITY_BUTTON).assertCountEquals(0)
 
         composeRule.onNodeWithTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON).performClick()
         composeRule.onNodeWithText("Focus").assertIsDisplayed()
@@ -488,10 +494,112 @@ class EnergyMapScreenTest {
         composeRule.onAllNodesWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}20").assertCountEquals(0)
 
         composeRule.onNodeWithTag(EnergyMapTestTags.PREVIOUS_DAY_BUTTON).performClick()
+        composeRule.onAllNodesWithTag(EnergyMapTestTags.START_ACTIVITY_BUTTON).assertCountEquals(0)
+        composeRule.onAllNodesWithTag(EnergyMapTestTags.END_CURRENT_ACTIVITY_BUTTON).assertCountEquals(0)
+        composeRule.onNodeWithTag(EnergyMapTestTags.MANUAL_ACTIVITY_BUTTON).assertIsDisplayed()
         composeRule.onNodeWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}7").assertIsDisplayed()
         composeRule.onNodeWithTag("${EnergyMapTestTags.ENERGY_TIMELINE_MARKER_PREFIX}9").assertIsDisplayed()
 
         composeRule.onNodeWithTag(EnergyMapTestTags.BACK_TO_CHECK_INS_BUTTON).performClick()
         composeRule.onNodeWithTag(EnergyMapTestTags.ENERGY_CHECK_INS_HEADER).assertIsDisplayed()
+    }
+
+    @Test
+    fun activityTimelineBlockTextDensityVariesByHeight() {
+        val nowMillis = todayDate.atTime(13, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val tinyStart = todayDate.atTime(8, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val mediumStart = todayDate.atTime(9, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val largeStart = todayDate.atTime(10, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val activityEntries = listOf(
+            ActivityEntry(
+                id = 1,
+                title = "TinyHidden",
+                startTime = tinyStart,
+                endTime = tinyStart + (5 * 60_000),
+                note = "TinyNoteHidden",
+                isOngoing = false,
+            ),
+            ActivityEntry(
+                id = 2,
+                title = "MediumShown",
+                startTime = mediumStart,
+                endTime = mediumStart + (30 * 60_000),
+                note = "MediumNoteHidden",
+                isOngoing = false,
+            ),
+            ActivityEntry(
+                id = 3,
+                title = "LargeShown",
+                startTime = largeStart,
+                endTime = largeStart + (90 * 60_000),
+                note = "LargeNoteShown",
+                isOngoing = false,
+            ),
+        )
+
+        composeRule.setContent {
+            EnergyMapTheme {
+                val activityState = deriveActivityTimelineState(
+                    activityEntries = activityEntries,
+                    energyEntries = emptyList(),
+                    selectedDate = todayDate,
+                    nowMillis = nowMillis,
+                    zoneId = zoneId,
+                )
+
+                EnergyMapScreen(
+                    uiState = EnergyMapUiState(
+                        currentView = EnergyMapView.ActivityTimeline,
+                        selectedActivityDate = todayDate,
+                        activityEntries = activityEntries,
+                        currentActivity = activityState.currentActivity,
+                        dailyTimelineItems = activityState.timelineItems,
+                    ),
+                    onAddEnergyClick = {},
+                    onShowActivityView = {},
+                    onShowCheckInsView = {},
+                    onEditEnergyClick = {},
+                    onEntryFilterChange = {},
+                    onToggleExpandedEntry = {},
+                    onEditorLevelChange = {},
+                    onEditorNoteChange = {},
+                    onSaveEnergy = {},
+                    onRequestDelete = {},
+                    onConfirmDelete = {},
+                    onSelectPreviousActivityDate = {},
+                    onSelectNextActivityDate = {},
+                    onSelectTodayActivityDate = {},
+                    onOpenStartActivityDialog = {},
+                    onQuickStartTitleChange = {},
+                    onQuickStartNoteChange = {},
+                    onConfirmStartActivity = {},
+                    onEndCurrentActivity = {},
+                    onOpenManualActivityDialog = {},
+                    onEditActivityClick = {},
+                    onActivityTitleChange = {},
+                    onActivityNoteChange = {},
+                    onActivityTimeFieldClick = {},
+                    onActivityTimeSelected = {},
+                    onDismissActivityTimePicker = {},
+                    onEndsNextDayChange = {},
+                    onSaveActivity = {},
+                    onRequestDeleteActivity = {},
+                    onConfirmDeleteActivity = {},
+                    onDismissDialogs = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}1").assertIsDisplayed()
+        composeRule.onAllNodesWithText("TinyHidden").assertCountEquals(0)
+        composeRule.onAllNodesWithText("TinyNoteHidden").assertCountEquals(0)
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}2").assertIsDisplayed()
+        composeRule.onNodeWithText("MediumShown").assertIsDisplayed()
+        composeRule.onAllNodesWithText("MediumNoteHidden").assertCountEquals(0)
+
+        composeRule.onNodeWithTag("${EnergyMapTestTags.ACTIVITY_BLOCK_PREFIX}3").assertIsDisplayed()
+        composeRule.onNodeWithText("LargeShown").assertIsDisplayed()
+        composeRule.onNodeWithText("LargeNoteShown").assertIsDisplayed()
     }
 }

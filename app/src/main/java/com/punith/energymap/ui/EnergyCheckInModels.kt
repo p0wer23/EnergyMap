@@ -39,6 +39,13 @@ enum class ActivityTimeField {
     End,
 }
 
+enum class ActivityBlockContentMode {
+    Full,
+    Compact,
+    TimeOnly,
+    None,
+}
+
 data class EnergyEditorState(
     val isVisible: Boolean = false,
     val mode: EnergyEditorMode = EnergyEditorMode.Add,
@@ -75,6 +82,7 @@ sealed interface DailyTimelineItem {
         val notePreview: String?,
         val timeRangeText: String,
         val isOngoing: Boolean,
+        val contentMode: ActivityBlockContentMode,
     ) : DailyTimelineItem
 
     data class EnergyMarker(
@@ -251,13 +259,25 @@ fun buildUpdatedActivityEntry(
 fun defaultNewEnergyLevel(latestOverallEntry: EnergyEntry?): Int =
     latestOverallEntry?.energyLevel ?: 5
 
-fun defaultManualActivityEditorState(selectedDate: LocalDate, today: LocalDate): ActivityEditorState {
-    val startTime = if (selectedDate == today) LocalTime.now().withSecond(0).withNano(0) else LocalTime.of(9, 0)
+fun defaultManualActivityEditorState(
+    selectedDate: LocalDate,
+    today: LocalDate,
+    nowMillis: Long = System.currentTimeMillis(),
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): ActivityEditorState {
+    val startTime = if (selectedDate == today) {
+        Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalTime().withSecond(0).withNano(0)
+    } else {
+        LocalTime.of(9, 0)
+    }
+    val endTime = startTime.plusHours(1)
+    val endsNextDay = selectedDate == today && endTime <= startTime
     return ActivityEditorState(
         isVisible = true,
         mode = ActivityEditorMode.AddManual,
         startTime = startTime,
-        endTime = startTime.plusHours(1),
+        endTime = endTime,
+        endsNextDay = endsNextDay,
     )
 }
 
@@ -355,16 +375,28 @@ private fun buildActivityBlock(
     val totalDayMillis = (dayEnd - dayStart).toFloat()
     val topFraction = ((clippedStart - dayStart) / totalDayMillis).coerceIn(0f, 1f)
     val heightFraction = ((clippedEnd - clippedStart) / totalDayMillis).coerceAtLeast(MIN_BLOCK_FRACTION)
+    val finalHeightFraction = heightFraction.coerceAtMost(1f - topFraction)
 
     return DailyTimelineItem.ActivityBlock(
         entry = entry,
         topFraction = topFraction,
-        heightFraction = heightFraction.coerceAtMost(1f - topFraction),
+        heightFraction = finalHeightFraction,
         title = entry.title,
         notePreview = entry.note.trim().takeIf(String::isNotEmpty),
         timeRangeText = formatTimelineTimeRange(entry.startTime, entry.endTime, zoneId),
         isOngoing = entry.isOngoing,
+        contentMode = activityBlockContentMode(finalHeightFraction),
     )
+}
+
+private fun activityBlockContentMode(heightFraction: Float): ActivityBlockContentMode {
+    val heightDp = heightFraction * TIMELINE_HEIGHT_DP
+    return when {
+        heightDp >= FULL_BLOCK_HEIGHT_DP -> ActivityBlockContentMode.Full
+        heightDp >= COMPACT_BLOCK_HEIGHT_DP -> ActivityBlockContentMode.Compact
+        heightDp >= TIME_ONLY_BLOCK_HEIGHT_DP -> ActivityBlockContentMode.TimeOnly
+        else -> ActivityBlockContentMode.None
+    }
 }
 
 private fun buildEnergyMarker(
@@ -393,4 +425,11 @@ private fun lerpColor(start: Color, end: Color, fraction: Float): Color =
 
 private const val NOTE_PREVIEW_CHARACTER_LIMIT = 15
 private const val MINUTES_PER_DAY = 24 * 60
-private const val MIN_BLOCK_FRACTION = 1f / MINUTES_PER_DAY
+private const val TIMELINE_ROW_COUNT = 48
+private const val GRID_ROW_HEIGHT_DP = 44f
+private const val TIMELINE_HEIGHT_DP = GRID_ROW_HEIGHT_DP * TIMELINE_ROW_COUNT
+private const val MIN_BLOCK_HEIGHT_DP = 10f
+private const val FULL_BLOCK_HEIGHT_DP = 72f
+private const val COMPACT_BLOCK_HEIGHT_DP = 44f
+private const val TIME_ONLY_BLOCK_HEIGHT_DP = 22f
+private const val MIN_BLOCK_FRACTION = MIN_BLOCK_HEIGHT_DP / TIMELINE_HEIGHT_DP

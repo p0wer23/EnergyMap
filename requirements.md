@@ -64,6 +64,9 @@ Use `Activity` as the product term, not `Task`.
 ## Current App State
 
 - energy check-ins and activity timeline are implemented in the local app UI
+- activity timeline uses a single context-aware live button on `Today`
+- manual activity entry defaults to current local time on `Today`
+- timeline blocks reduce text by height to avoid visual collisions
 
 ## Data Model
 

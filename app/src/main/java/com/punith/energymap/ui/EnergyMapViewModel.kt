@@ -276,7 +276,12 @@ class EnergyMapViewModel(
     }
 
     fun onOpenManualActivityDialog() {
-        activityEditorState.value = defaultManualActivityEditorState(selectedActivityDate.value, today())
+        activityEditorState.value = defaultManualActivityEditorState(
+            selectedDate = selectedActivityDate.value,
+            today = today(),
+            nowMillis = currentTimeMillis(),
+            zoneId = zoneId,
+        )
         activityValidationMessage.value = null
     }
 
