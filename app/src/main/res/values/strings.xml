@@ -17,7 +17,7 @@
     <string name="edit_check_in_title">Edit Energy Check-in</string>
     <string name="start_activity_action">Start Activity</string>
     <string name="end_current_activity_action">End Current</string>
-    <string name="manual_activity_action">Manual Activity Entry</string>
+    <string name="manual_activity_action">Manual Entry</string>
     <string name="new_activity_title">New Activity</string>
     <string name="edit_activity_title">Edit Activity</string>
     <string name="activity_title_label">Activity title</string>

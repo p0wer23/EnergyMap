@@ -27,7 +27,7 @@
     <string name="end_time_value">End: %1$s</string>
     <string name="ends_next_day_label">Ends next day</string>
     <string name="energy_history_title">Energy Check-ins</string>
-    <string name="manual_activity_action">Manual Activity Entry</string>
+    <string name="manual_activity_action">Manual Entry</string>
     <string name="new_activity_title">New Activity</string>
     <string name="new_check_in_title">New Energy Check-in</string>
     <string name="next_day_content_description">Next day</string>
