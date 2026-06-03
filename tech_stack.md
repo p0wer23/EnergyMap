@@ -40,4 +40,6 @@ Use the latest stable versions available as of `2026-06-02`:
 - no backend
 - no DI framework in v1
 - keep architecture simple
+- activity tracking stays on existing Compose + Room + `ViewModel` + `StateFlow` setup
+- no new dependency required for the activity timeline feature
 - debug APK output name: `EnergyMap-setup-debug.apk`

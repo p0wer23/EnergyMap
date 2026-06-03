@@ -193,12 +193,20 @@
     <item name="wrapped_composition_tag" type="id"/>
     <integer name="m3c_window_layout_in_display_cutout_mode">1</integer>
     <integer name="status_bar_notification_info_maxnum">999</integer>
+    <string name="activity_end_time_invalid_message">End time must be after start time.</string>
+    <string name="activity_note_label">Activity note</string>
+    <string name="activity_overlap_message">Activity overlaps an existing entry.</string>
+    <string name="activity_timeline_title">Activity Timeline</string>
+    <string name="activity_title_label">Activity title</string>
+    <string name="activity_title_required_message">Title is required.</string>
+    <string name="activity_view_content_description">Open activity timeline</string>
     <string name="add_check_in_symbol">+</string>
     <string name="add_energy_content_description">Add energy</string>
     <string name="androidx_compose_foundation_autofill">Autofill</string>
     <string name="androidx_compose_ui_autofill">Autofill</string>
     <string name="androidx_startup" translatable="false">androidx.startup</string>
     <string name="app_name">EnergyMap</string>
+    <string name="back_to_check_ins_content_description">Back to check-ins</string>
     <string name="call_notification_answer_action">Answer</string>
     <string name="call_notification_answer_video_action">Video</string>
     <string name="call_notification_decline_action">Decline</string>
@@ -209,14 +217,22 @@
     <string name="cancel_action">Cancel</string>
     <string name="close_drawer">"Close navigation menu"</string>
     <string name="close_sheet">"Close sheet"</string>
+    <string name="current_activity_status">Current: %1$s</string>
     <string name="default_error_message">"Invalid input"</string>
     <string name="default_popup_window_title" tools:ignore="ExtraTranslation">"Pop-Up Window"</string>
     <string name="delete_action">Delete</string>
+    <string name="delete_activity_dialog_message">Remove %1$s from the timeline?</string>
+    <string name="delete_activity_dialog_title">Delete activity?</string>
     <string name="delete_dialog_message">Remove the check-in recorded at %1$s?</string>
     <string name="delete_dialog_title">Delete check-in?</string>
     <string name="dropdown_menu">"Dropdown menu"</string>
+    <string name="edit_activity_title">Edit Activity</string>
     <string name="edit_check_in_title">Edit Energy Check-in</string>
     <string name="edit_entry_content_description">Edit check-in</string>
+    <string name="end_current_activity_action">End Current</string>
+    <string name="end_time_label">End time</string>
+    <string name="end_time_value">End: %1$s</string>
+    <string name="ends_next_day_label">Ends next day</string>
     <string name="energy_history_title">Energy Check-ins</string>
     <string name="in_progress">In progress</string>
     <string name="indeterminate">Partially checked</string>
@@ -290,13 +306,18 @@
     <string name="m3c_tooltip_pane_description">Tooltip</string>
     <string name="m3c_wide_navigation_rail_close_rail">"Close rail"</string>
     <string name="m3c_wide_navigation_rail_pane_title">"Navigation rail"</string>
+    <string name="manual_activity_action">Manual Activity Entry</string>
     <string name="navigation_menu">"Navigation menu"</string>
+    <string name="new_activity_title">New Activity</string>
     <string name="new_check_in_title">New Energy Check-in</string>
+    <string name="next_day_content_description">Next day</string>
     <string name="no_previous_check_ins">No previous check-ins yet.</string>
     <string name="no_today_check_ins">No check-ins recorded for today.</string>
     <string name="not_selected">Not selected</string>
     <string name="note_label">Note</string>
     <string name="note_placeholder">Optional note</string>
+    <string name="ongoing_label">ongoing</string>
+    <string name="previous_day_content_description">Previous day</string>
     <string name="previous_filter_label">Previous</string>
     <string name="range_end">"Range end"</string>
     <string name="range_start">"Range start"</string>
@@ -304,6 +325,9 @@
     <string name="save_action">Save</string>
     <string name="selected">Selected</string>
     <string name="snackbar_pane_title">Alert</string>
+    <string name="start_activity_action">Start Activity</string>
+    <string name="start_time_label">Start time</string>
+    <string name="start_time_value">Start: %1$s</string>
     <string name="state_empty">Empty</string>
     <string name="state_off">Off</string>
     <string name="state_on">On</string>

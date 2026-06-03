@@ -1,6 +1,8 @@
 package com.punith.energymap.ui
 
+import com.punith.energymap.data.ActivityEntry
 import com.punith.energymap.data.EnergyEntry
+import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -135,5 +137,122 @@ class EnergyCheckInModelsTest {
 
         assertEquals(3, defaultNewEnergyLevel(latestOverallEntry))
         assertEquals(5, defaultNewEnergyLevel(null))
+    }
+
+    @Test
+    fun overlapDetectionRejectsExactOverlaps() {
+        assertTrue(
+            activityIntervalsOverlap(
+                existingStart = 1_000L,
+                existingEnd = 2_000L,
+                candidateStart = 1_000L,
+                candidateEnd = 2_000L,
+            ),
+        )
+    }
+
+    @Test
+    fun adjacentActivitiesAreAllowed() {
+        assertFalse(
+            activityIntervalsOverlap(
+                existingStart = 1_000L,
+                existingEnd = 2_000L,
+                candidateStart = 2_000L,
+                candidateEnd = 3_000L,
+            ),
+        )
+    }
+
+    @Test
+    fun ongoingActivityBlocksFutureActivity() {
+        assertTrue(
+            activityIntervalsOverlap(
+                existingStart = 1_000L,
+                existingEnd = null,
+                candidateStart = 2_000L,
+                candidateEnd = 3_000L,
+            ),
+        )
+    }
+
+    @Test
+    fun crossMidnightActivityIsClippedAcrossDays() {
+        val selectedDate = LocalDate.of(2024, 6, 1)
+        val start = selectedDate.atTime(23, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val end = selectedDate.plusDays(1).atTime(1, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val activity = ActivityEntry(
+            id = 1,
+            title = "Late work",
+            startTime = start,
+            endTime = end,
+            note = "",
+            isOngoing = false,
+        )
+
+        val firstDayState = deriveActivityTimelineState(
+            activityEntries = listOf(activity),
+            energyEntries = emptyList(),
+            selectedDate = selectedDate,
+            nowMillis = end,
+            zoneId = zoneId,
+        )
+        val secondDayState = deriveActivityTimelineState(
+            activityEntries = listOf(activity),
+            energyEntries = emptyList(),
+            selectedDate = selectedDate.plusDays(1),
+            nowMillis = end,
+            zoneId = zoneId,
+        )
+
+        val firstDayBlock = firstDayState.timelineItems.filterIsInstance<DailyTimelineItem.ActivityBlock>().single()
+        val secondDayBlock = secondDayState.timelineItems.filterIsInstance<DailyTimelineItem.ActivityBlock>().single()
+
+        assertTrue(firstDayBlock.topFraction > 0.95f)
+        assertTrue(firstDayBlock.heightFraction > 0f)
+        assertEquals(0f, secondDayBlock.topFraction)
+        assertTrue(secondDayBlock.heightFraction > 0f)
+    }
+
+    @Test
+    fun energyMarkersUseSelectedDayPosition() {
+        val selectedDate = LocalDate.of(2024, 6, 1)
+        val timestamp = selectedDate.atTime(6, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val energy = EnergyEntry(id = 1, timestamp = timestamp, energyLevel = 7, note = "")
+
+        val state = deriveActivityTimelineState(
+            activityEntries = emptyList(),
+            energyEntries = listOf(energy),
+            selectedDate = selectedDate,
+            nowMillis = timestamp,
+            zoneId = zoneId,
+        )
+
+        val marker = state.timelineItems.filterIsInstance<DailyTimelineItem.EnergyMarker>().single()
+        assertEquals(0.25f, marker.topFraction, 0.0001f)
+    }
+
+    @Test
+    fun timelineItemsSortByActivityTimeAndIncludeEnergyMarkers() {
+        val selectedDate = LocalDate.of(2024, 6, 1)
+        val earlyStart = selectedDate.atTime(8, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val lateStart = selectedDate.atTime(10, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val energyTime = selectedDate.atTime(9, 0).atZone(zoneId).toInstant().toEpochMilli()
+        val entries = listOf(
+            ActivityEntry(id = 2, title = "Late", startTime = lateStart, endTime = lateStart + 3_600_000, note = "", isOngoing = false),
+            ActivityEntry(id = 1, title = "Early", startTime = earlyStart, endTime = earlyStart + 3_600_000, note = "", isOngoing = false),
+        )
+        val energy = EnergyEntry(id = 9, timestamp = energyTime, energyLevel = 5, note = "")
+
+        val state = deriveActivityTimelineState(
+            activityEntries = entries,
+            energyEntries = listOf(energy),
+            selectedDate = selectedDate,
+            nowMillis = lateStart,
+            zoneId = zoneId,
+        )
+
+        val blocks = state.timelineItems.filterIsInstance<DailyTimelineItem.ActivityBlock>()
+        assertEquals(listOf(1L, 2L), blocks.map { it.entry.id })
+        assertEquals(1, state.timelineItems.filterIsInstance<DailyTimelineItem.EnergyMarker>().size)
     }
 }

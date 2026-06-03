@@ -43,6 +43,9 @@ Suggested labels:
 - end time or ongoing state
 - optional note
 - editable and deletable
+- reject overlapping activity times
+- daily activity view uses a 30-minute vertical timeline
+- timeline combines activity blocks with same-day energy markers
 
 Use `Activity` as the product term, not `Task`.
 
@@ -52,14 +55,15 @@ Use `Activity` as the product term, not `Task`.
 - start activity
 - end current activity
 - manual activity entry with start/end time
+- activity edit/delete
 - combined daily timeline for energy and activities
+- previous day browsing in activity view
 - local storage only
 - basic edit/delete for both record types
 
-## Current Setup State
+## Current App State
 
-- setup build currently shows a minimal verification screen with `app running...`
-- app features above are still the intended v1 scope
+- energy check-ins and activity timeline are implemented in the local app UI
 
 ## Data Model
 
